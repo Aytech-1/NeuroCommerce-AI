@@ -1,0 +1,63 @@
+# ==============================================================================
+# NeuroCommerce AI — Monorepo Root .gitignore
+# ==============================================================================
+
+# Environment and Secrets
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.example.*
+auth.json
+
+# Dependencies
+**/node_modules/
+**/vendor/
+
+# Next.js and Frontend Build Artifacts
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+frontend/coverage/
+frontend/*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+
+# Laravel and Backend Build / Cache / Storage Artifacts
+backend/public/build/
+backend/public/hot/
+backend/public/storage
+backend/storage/*.key
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+backend/storage/pail/
+backend/.phpunit.cache/
+backend/.phpunit.result.cache
+backend/_ide_helper*.php
+backend/.phpactor.json
+
+# Logs and Crash Dumps
+**/*.log
+**/*stackdump*
+**/*.tmp
+**/*.temp
+
+# Local SQLite Databases
+**/*.sqlite
+**/*.sqlite-journal
+**/*.sqlite3
+
+# OS and Editor Artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.nova/
+.zed/
+.codex/
+.cursor/
+*.swp
+*.swo
+Homestead.json
+Homestead.yaml
