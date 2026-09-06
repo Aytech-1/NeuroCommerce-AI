@@ -45,7 +45,7 @@ test('public user can list active products with pagination envelope', function (
 });
 
 test('public user can filter products by category, brand, and price range', function () {
-    $response = $this->getJson('/api/v1/products?filter[category]=audio-headphones&filter[min_price]=50&filter[max_price]=150');
+    $response = $this->getJson('/api/v1/products?filter[category]=audio-headphones&filter[min_price]=50000&filter[max_price]=150000');
 
     $response->assertStatus(200);
     $data = $response->json('data');

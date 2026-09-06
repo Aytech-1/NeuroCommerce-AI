@@ -8,15 +8,17 @@ import {
   Lock,
   Globe,
   Shield,
-  RefreshCw,
-  ChevronRight,
-  Search,
-  CheckCircle2,
   AlertCircle,
   KeyRound,
-  FileCode,
-  Layers,
-  Sparkles,
+  ExternalLink,
+  ChevronRight,
+  Search,
+  Activity,
+  CreditCard,
+  Truck,
+  Flag,
+  FileText,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -186,7 +188,30 @@ export default function AdminSettingsPage() {
       )}
 
       {/* ======================================================================= */}
-      {/* 3. SETTINGS WORKSPACE                                                   */}
+      {/* 3. UNSAVED CHANGES ALERT BANNER                                         */}
+      {/* ======================================================================= */}
+      {isDirty && (
+        <div className="flex items-center justify-between p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
+          <div className="flex items-center gap-2 text-xs font-semibold">
+            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+            <span>You have unsaved changes. Remember to click Save Changes to persist configuration updates to database.</span>
+          </div>
+          <Can permission="setting.update">
+            <Button
+              size="sm"
+              onClick={handleSaveGroup}
+              disabled={bulkUpdateMutation.isPending}
+              isLoading={bulkUpdateMutation.isPending}
+              className="h-8 px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              Save Now
+            </Button>
+          </Can>
+        </div>
+      )}
+
+      {/* ======================================================================= */}
+      {/* 4. SETTINGS WORKSPACE                                                   */}
       {/* ======================================================================= */}
       {isLoading ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
@@ -198,9 +223,9 @@ export default function AdminSettingsPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 mx-auto">
             <AlertCircle className="h-6 w-6" aria-hidden="true" />
           </div>
-          <h3 className="text-base font-extrabold text-slate-900">Failed to load system settings</h3>
+          <h3 className="text-base font-extrabold text-slate-900">Failed to Load Configuration</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Unable to retrieve the current system configuration.
+            Unable to retrieve the current system configuration from backend API.
           </p>
           <Button onClick={() => refetch()} variant="outline" size="sm" className="mt-2 text-xs font-bold">
             Retry Loading
@@ -208,8 +233,8 @@ export default function AdminSettingsPage() {
         </div>
       ) : groups.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-          {/* Left: Group Navigation Rail */}
-          <div className="space-y-3">
+          {/* Left: Group Navigation Rail & Quick Management Links */}
+          <div className="space-y-4">
             <div className="p-4 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 block mb-1">
                 Namespaces
@@ -235,9 +260,66 @@ export default function AdminSettingsPage() {
                 </button>
               ))}
             </div>
+
+            {/* Dedicated Management Links */}
+            <div className="p-4 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 block mb-1">
+                Dedicated Modules
+              </span>
+              <Link
+                href="/admin/payments"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Payment Gateways</span>
+                </div>
+                <ExternalLink className="h-3 w-3 text-slate-400" />
+              </Link>
+              <Link
+                href="/admin/shipping"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Truck className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Shipping Zones</span>
+                </div>
+                <ExternalLink className="h-3 w-3 text-slate-400" />
+              </Link>
+              <Link
+                href="/admin/system/feature-flags"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Flag className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Feature Flags</span>
+                </div>
+                <ExternalLink className="h-3 w-3 text-slate-400" />
+              </Link>
+              <Link
+                href="/admin/system/health"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Activity className="h-3.5 w-3.5 text-slate-400" />
+                  <span>System Health</span>
+                </div>
+                <ExternalLink className="h-3 w-3 text-slate-400" />
+              </Link>
+              <Link
+                href="/admin/audit-logs"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Audit Logs</span>
+                </div>
+                <ExternalLink className="h-3 w-3 text-slate-400" />
+              </Link>
+            </div>
           </div>
 
-          {/* Right: Group Settings Editor */}
+          {/* Right: Group Settings Editor & Security Advisory */}
           <div className="space-y-6 md:col-span-3">
             <div className="p-6 sm:p-7 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-6">
               {/* Group Header & Search */}
@@ -399,6 +481,28 @@ export default function AdminSettingsPage() {
                     <span>Save Changes</span>
                   </Button>
                 </Can>
+              </div>
+            </div>
+
+            {/* Architecture & Security Guidance Box */}
+            <div className="p-5 rounded-[20px] bg-slate-900 text-white space-y-2.5">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-emerald-400" />
+                <span className="text-xs font-extrabold tracking-wide uppercase">Authoritative System Storage &amp; Isolation</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Settings are stored securely in <code className="text-emerald-300 font-mono">sys_settings</code> with AES-256-GCM encryption for secret tokens.
+                Environment secrets (such as APP_KEY, Redis/DB passwords, and Payment gateway keys) are managed via <code className="text-emerald-300 font-mono">.env</code> and never exposed through public or administrative client payloads.
+              </p>
+              <div className="flex items-center gap-4 text-[11px] text-slate-400 pt-1 border-t border-slate-800">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  Audit Trail Enabled
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+                  Strict RBAC Guarded
+                </span>
               </div>
             </div>
           </div>

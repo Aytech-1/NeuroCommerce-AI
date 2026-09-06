@@ -87,8 +87,8 @@ describe("Admin Order Detail Page", () => {
     expect(screen.getByText("123 Cyber Way")).toBeInTheDocument();
     expect(screen.getByText("Neural Interface V2")).toBeInTheDocument();
     expect(screen.getByText(/NIV2-01/i)).toBeInTheDocument();
-    expect(screen.getAllByText("$500.00").length).toBeGreaterThan(0);
-    expect(screen.getByText("$510.00")).toBeInTheDocument();
+    expect(screen.getAllByText("₦500.00").length).toBeGreaterThan(0);
+    expect(screen.getByText("₦510.00")).toBeInTheDocument();
     expect(screen.getByText("Express Shipping")).toBeInTheDocument();
   });
 });

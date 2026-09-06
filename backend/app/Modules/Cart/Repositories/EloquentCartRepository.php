@@ -38,7 +38,7 @@ class EloquentCartRepository extends AbstractRepository implements CartRepositor
             ->first();
     }
 
-    public function getOrCreateForUser(string $userId, string $currency = 'USD'): Cart
+    public function getOrCreateForUser(string $userId, ?string $currency = null): Cart
     {
         $cart = $this->findByUserId($userId);
 
@@ -48,11 +48,11 @@ class EloquentCartRepository extends AbstractRepository implements CartRepositor
 
         return $this->create([
             'user_id' => $userId,
-            'currency_code' => $currency,
+            'currency_code' => $currency ?? (string) config('neurocommerce.currency.default', 'NGN'),
         ]);
     }
 
-    public function getOrCreateForSession(string $sessionId, string $currency = 'USD', int $ttlDays = 7): Cart
+    public function getOrCreateForSession(string $sessionId, ?string $currency = null, int $ttlDays = 7): Cart
     {
         $cart = $this->findBySessionId($sessionId);
 
@@ -62,7 +62,7 @@ class EloquentCartRepository extends AbstractRepository implements CartRepositor
 
         return $this->create([
             'session_id' => $sessionId,
-            'currency_code' => $currency,
+            'currency_code' => $currency ?? (string) config('neurocommerce.currency.default', 'NGN'),
             'expires_at' => now()->addDays($ttlDays),
         ]);
     }

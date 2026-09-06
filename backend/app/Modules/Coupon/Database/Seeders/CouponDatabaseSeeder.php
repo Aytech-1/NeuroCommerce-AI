@@ -20,15 +20,15 @@ class CouponDatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Universal Percentage Coupon (WELCOME10)
-        Coupon::firstOrCreate(
+        Coupon::updateOrCreate(
             ['code' => 'WELCOME10'],
             [
                 'name' => 'Welcome 10% Discount',
                 'description' => '10% off entire order for new customers',
                 'type' => CouponType::PERCENTAGE,
                 'value' => 10.0000,
-                'min_order_amount' => 20.0000,
-                'max_discount_amount' => 50.0000,
+                'min_order_amount' => 30000.0000,
+                'max_discount_amount' => 75000.0000,
                 'usage_limit' => 10000,
                 'usage_limit_per_user' => 1,
                 'times_used' => 0,
@@ -39,15 +39,15 @@ class CouponDatabaseSeeder extends Seeder
         );
 
         // 2. Fixed Amount Coupon (SAVE25)
-        Coupon::firstOrCreate(
+        Coupon::updateOrCreate(
             ['code' => 'SAVE25'],
             [
-                'name' => '$25 Off Over $100',
-                'description' => '$25 instant discount on orders of $100 or more',
+                'name' => '₦37,500 Off Over ₦150,000',
+                'description' => '₦37,500 instant discount on orders of ₦150,000 or more',
                 'type' => CouponType::FIXED_AMOUNT,
-                'value' => 25.0000,
-                'min_order_amount' => 100.0000,
-                'max_discount_amount' => 25.0000,
+                'value' => 37500.0000,
+                'min_order_amount' => 150000.0000,
+                'max_discount_amount' => 37500.0000,
                 'usage_limit' => 500,
                 'usage_limit_per_user' => 2,
                 'times_used' => 0,
@@ -58,14 +58,14 @@ class CouponDatabaseSeeder extends Seeder
         );
 
         // 3. Free Shipping Coupon (FREESHIP)
-        Coupon::firstOrCreate(
+        Coupon::updateOrCreate(
             ['code' => 'FREESHIP'],
             [
                 'name' => 'Free Standard Shipping',
-                'description' => 'Free standard delivery on orders above $50',
+                'description' => 'Free standard delivery on orders above ₦75,000',
                 'type' => CouponType::FREE_SHIPPING,
                 'value' => 0.0000,
-                'min_order_amount' => 50.0000,
+                'min_order_amount' => 75000.0000,
                 'max_discount_amount' => null,
                 'usage_limit' => 2000,
                 'usage_limit_per_user' => 3,
@@ -77,7 +77,7 @@ class CouponDatabaseSeeder extends Seeder
         );
 
         // 4. Buy X Get Y Coupon (BOGO50)
-        Coupon::firstOrCreate(
+        Coupon::updateOrCreate(
             ['code' => 'BOGO50'],
             [
                 'name' => 'Buy One Get Second Discounted',
@@ -85,7 +85,7 @@ class CouponDatabaseSeeder extends Seeder
                 'type' => CouponType::BUY_X_GET_Y,
                 'value' => 1.0000,
                 'min_order_amount' => 0.0000,
-                'max_discount_amount' => 100.0000,
+                'max_discount_amount' => 150000.0000,
                 'usage_limit' => 1000,
                 'usage_limit_per_user' => 1,
                 'times_used' => 0,
@@ -96,15 +96,15 @@ class CouponDatabaseSeeder extends Seeder
         );
 
         // 5. Category Restricted Coupon (TECH20)
-        $techCoupon = Coupon::firstOrCreate(
+        $techCoupon = Coupon::updateOrCreate(
             ['code' => 'TECH20'],
             [
                 'name' => '20% Off Electronics Category',
                 'description' => '20% discount on electronics and tech products',
                 'type' => CouponType::PERCENTAGE,
                 'value' => 20.0000,
-                'min_order_amount' => 30.0000,
-                'max_discount_amount' => 150.0000,
+                'min_order_amount' => 45000.0000,
+                'max_discount_amount' => 225000.0000,
                 'usage_limit' => 300,
                 'usage_limit_per_user' => 1,
                 'times_used' => 0,

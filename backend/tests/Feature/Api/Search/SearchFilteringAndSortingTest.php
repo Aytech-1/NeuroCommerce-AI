@@ -20,7 +20,7 @@ class SearchFilteringAndSortingTest extends TestCase
 
     public function test_user_can_filter_search_by_category_and_price_range(): void
     {
-        $response = $this->getJson('/api/v1/search?filter[category]=audio-headphones&filter[min_price]=50&filter[max_price]=150');
+        $response = $this->getJson('/api/v1/search?filter[category]=audio-headphones&filter[min_price]=50000&filter[max_price]=150000');
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true);
@@ -28,8 +28,8 @@ class SearchFilteringAndSortingTest extends TestCase
         $data = $response->json('data');
         $this->assertNotEmpty($data);
         foreach ($data as $product) {
-            $this->assertGreaterThanOrEqual(50, (float) $product['base_price']);
-            $this->assertLessThanOrEqual(150, (float) $product['base_price']);
+            $this->assertGreaterThanOrEqual(50000, (float) $product['base_price']);
+            $this->assertLessThanOrEqual(150000, (float) $product['base_price']);
         }
     }
 

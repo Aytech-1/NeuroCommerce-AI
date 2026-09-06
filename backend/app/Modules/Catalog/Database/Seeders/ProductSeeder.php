@@ -35,7 +35,7 @@ class ProductSeeder extends Seeder
         $aeroknit = Brand::where('slug', 'aeroknit-apparel')->first() ?? Brand::first();
 
         // 1. SoundMax Pulse Wireless Headphones
-        $p1 = Product::firstOrCreate(
+        $p1 = Product::updateOrCreate(
             ['sku' => 'WBH-001'],
             [
                 'name' => 'Wireless Bluetooth Headphones',
@@ -44,10 +44,10 @@ class ProductSeeder extends Seeder
                 'description' => '<p>Engineered with 40mm beryllium drivers, 30-hour battery life, and spatial audio.</p>',
                 'category_id' => $electronics?->id,
                 'brand_id' => $soundmax?->id,
-                'base_price' => 79.9900,
-                'compare_at_price' => 99.9900,
-                'cost_price' => 35.0000,
-                'currency_code' => 'USD',
+                'base_price' => 120000.00,
+                'compare_at_price' => 150000.00,
+                'cost_price' => 55000.00,
+                'currency_code' => 'NGN',
                 'tax_class' => 'standard',
                 'weight' => 0.2800,
                 'weight_unit' => WeightUnit::KG,
@@ -72,12 +72,12 @@ class ProductSeeder extends Seeder
         $silver = AttributeValue::where('slug', 'silver-grey')->first();
 
         if ($black) {
-            $v1 = ProductVariant::firstOrCreate(
+            $v1 = ProductVariant::updateOrCreate(
                 ['sku' => 'WBH-001-BLK'],
                 [
                     'product_id' => $p1->id,
                     'name' => 'Midnight Black',
-                    'price' => 79.9900,
+                    'price' => 120000.00,
                     'is_active' => true,
                     'sort_order' => 1,
                 ]
@@ -88,12 +88,12 @@ class ProductSeeder extends Seeder
         }
 
         if ($silver) {
-            $v2 = ProductVariant::firstOrCreate(
+            $v2 = ProductVariant::updateOrCreate(
                 ['sku' => 'WBH-001-SLV'],
                 [
                     'product_id' => $p1->id,
                     'name' => 'Silver Grey',
-                    'price' => 84.9900,
+                    'price' => 127500.00,
                     'is_active' => true,
                     'sort_order' => 2,
                 ]
@@ -109,7 +109,7 @@ class ProductSeeder extends Seeder
         $p1->tags()->syncWithoutDetaching([$tagBestseller->id, $tagWireless->id]);
 
         // 2. NeuroPhone Pro X
-        $p2 = Product::firstOrCreate(
+        $p2 = Product::updateOrCreate(
             ['sku' => 'NPH-001'],
             [
                 'name' => 'NeuroPhone Pro X Flagship Smartphone',
@@ -118,10 +118,10 @@ class ProductSeeder extends Seeder
                 'description' => '<p>The ultimate smartphone engineered for AI neural inference on-device.</p>',
                 'category_id' => $smartphones?->id,
                 'brand_id' => $neurotech?->id,
-                'base_price' => 999.0000,
-                'compare_at_price' => 1099.0000,
-                'cost_price' => 550.0000,
-                'currency_code' => 'USD',
+                'base_price' => 1499000.00,
+                'compare_at_price' => 1650000.00,
+                'cost_price' => 825000.00,
+                'currency_code' => 'NGN',
                 'is_featured' => true,
                 'is_active' => true,
                 'status' => ProductStatus::ACTIVE,
@@ -139,7 +139,7 @@ class ProductSeeder extends Seeder
         );
 
         // 3. AeroKnit Seamless Athletic Tee
-        $p3 = Product::firstOrCreate(
+        $p3 = Product::updateOrCreate(
             ['sku' => 'AKT-001'],
             [
                 'name' => 'AeroKnit Seamless Athletic Tee',
@@ -148,10 +148,10 @@ class ProductSeeder extends Seeder
                 'description' => '<p>Ultra-breathable seamless knit construction.</p>',
                 'category_id' => $apparel?->id,
                 'brand_id' => $aeroknit?->id,
-                'base_price' => 45.0000,
+                'base_price' => 67500.00,
                 'compare_at_price' => null,
-                'cost_price' => 12.0000,
-                'currency_code' => 'USD',
+                'cost_price' => 18000.00,
+                'currency_code' => 'NGN',
                 'is_featured' => false,
                 'is_active' => true,
                 'status' => ProductStatus::ACTIVE,

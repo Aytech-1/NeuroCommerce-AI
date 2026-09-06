@@ -41,7 +41,7 @@ class UserFactory extends Factory
             'user_type' => 'customer',
             'is_active' => true,
             'locale' => 'en',
-            'currency_code' => 'USD',
+            'currency_code' => 'NGN',
             'timezone' => 'UTC',
             'remember_token' => Str::random(10),
         ];

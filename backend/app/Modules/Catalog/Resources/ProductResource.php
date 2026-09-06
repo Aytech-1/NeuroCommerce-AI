@@ -51,11 +51,22 @@ class ProductResource extends JsonResource
                 ] : null;
             }),
             'primary_image' => $this->whenLoaded('primaryImage', function () {
-                return $this->primaryImage ? [
-                    'id' => $this->primaryImage->id,
-                    'url' => $this->primaryImage->url,
-                    'alt_text' => $this->primaryImage->alt_text,
+                $primary = $this->primaryImage ?? ($this->relationLoaded('images') ? $this->images?->sortBy('sort_order')->first() : null);
+                return $primary ? [
+                    'id' => $primary->id,
+                    'url' => $primary->url,
+                    'alt_text' => $primary->alt_text,
                 ] : null;
+            }, function () {
+                if ($this->relationLoaded('images') && $this->images?->isNotEmpty()) {
+                    $primary = $this->images->firstWhere('is_primary', true) ?? $this->images->sortBy('sort_order')->first();
+                    return $primary ? [
+                        'id' => $primary->id,
+                        'url' => $primary->url,
+                        'alt_text' => $primary->alt_text,
+                    ] : null;
+                }
+                return null;
             }),
             'images' => ProductImageResource::collection($this->whenLoaded('images')),
             'published_at' => $this->published_at?->toISOString(),

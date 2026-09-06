@@ -371,11 +371,11 @@ export default function RegisterPage() {
             />
             <label htmlFor="terms" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
               I agree to the{" "}
-              <Link href="/cms/pages/terms-of-service" className="font-bold text-blue-600 hover:underline">
+              <Link href="/terms" className="font-bold text-blue-600 hover:underline">
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link href="/cms/pages/privacy-policy" className="font-bold text-blue-600 hover:underline">
+              <Link href="/privacy" className="font-bold text-blue-600 hover:underline">
                 Privacy Policy
               </Link>
             </label>
@@ -438,11 +438,11 @@ export default function RegisterPage() {
         <div className="pt-2 text-center">
           <p className="text-[11px] text-slate-400">
             By creating an account, you agree to our{" "}
-            <Link href="/cms/pages/terms-of-service" className="text-slate-600 hover:underline">
+            <Link href="/terms" className="text-slate-600 hover:underline">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link href="/cms/pages/privacy-policy" className="text-slate-600 hover:underline">
+            <Link href="/privacy" className="text-slate-600 hover:underline">
               Privacy Policy
             </Link>.
           </p>

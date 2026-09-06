@@ -76,8 +76,8 @@ describe("Customer Order History & Management Suite (STEP 26.8)", () => {
     expect(screen.getByText("ORD-2026-0002")).toBeInTheDocument();
     expect(screen.getAllByText("Delivered").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Processing").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("$549.99")).toBeInTheDocument();
-    expect(screen.getByText("$1,250.00")).toBeInTheDocument();
+    expect(screen.getByText("₦549.99")).toBeInTheDocument();
+    expect(screen.getByText("₦1,250.00")).toBeInTheDocument();
 
     const viewOrderLinks = screen.getAllByRole("link", { name: /view order/i });
     expect(viewOrderLinks.length).toBe(2);

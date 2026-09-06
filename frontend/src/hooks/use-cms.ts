@@ -28,6 +28,16 @@ export function useCmsPage(id: string) {
   });
 }
 
+export function usePublicPage(slug: string) {
+  return useQuery({
+    queryKey: ["public", "cms", "page", slug],
+    queryFn: () => cmsService.getPublicPage(slug),
+    enabled: !!slug,
+    staleTime: 60 * 1000,
+    retry: 1,
+  });
+}
+
 export function useTogglePublishPage() {
   const queryClient = useQueryClient();
   return useMutation({

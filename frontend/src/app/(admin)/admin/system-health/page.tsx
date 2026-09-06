@@ -11,16 +11,26 @@ import {
   RefreshCw,
   Server,
   Database,
-  ShieldCheck,
-  Cpu,
-  Layers,
   ChevronRight,
-  ArrowRight,
   ExternalLink,
   Clock,
   Radio,
+  HardDrive,
+  Sparkles,
+  Zap,
+  Sliders,
+  FileText,
+  CreditCard,
+  Truck,
+  Flag,
+  Layers,
 } from "lucide-react";
-import { useSystemHealth, useSystemVersion, HEALTH_QUERY_KEYS } from "@/hooks/use-health";
+import {
+  useAdminSystemHealth,
+  useSystemHealth,
+  useSystemVersion,
+  HEALTH_QUERY_KEYS,
+} from "@/hooks/use-health";
 import { useActivityLogs } from "@/hooks/use-audit";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -31,33 +41,34 @@ export default function AdminSystemHealthPage() {
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const {
-    data: health,
-    isLoading: isHealthLoading,
-    isError: isHealthError,
-    refetch: refetchHealth,
-    dataUpdatedAt: healthUpdatedAt,
-  } = useSystemHealth();
+  // Authoritative admin detailed diagnostic query
+  const adminHealthQuery = useAdminSystemHealth?.();
+  const adminHealth = adminHealthQuery?.data;
+  const isAdminHealthLoading = adminHealthQuery?.isLoading;
+  const isAdminHealthError = adminHealthQuery?.isError;
+  const refetchAdminHealth = adminHealthQuery?.refetch;
+  const adminHealthUpdatedAt = adminHealthQuery?.dataUpdatedAt;
 
-  const {
-    data: version,
-    isLoading: isVersionLoading,
-  } = useSystemVersion();
+  // Fallback public telemetry hooks if admin payload is pending
+  const publicHealthQuery = useSystemHealth?.();
+  const publicHealth = publicHealthQuery?.data;
+  const publicVersionQuery = useSystemVersion?.();
+  const publicVersion = publicVersionQuery?.data;
 
-  const {
-    data: activityLogsData,
-    isLoading: isActivityLoading,
-  } = useActivityLogs({ per_page: 5 });
+  const activityQuery = useActivityLogs({ per_page: 5 });
+  const activityLogsData = activityQuery?.data;
+  const isActivityLoading = activityQuery?.isLoading;
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: HEALTH_QUERY_KEYS.adminHealth }),
         queryClient.invalidateQueries({ queryKey: HEALTH_QUERY_KEYS.health }),
         queryClient.invalidateQueries({ queryKey: HEALTH_QUERY_KEYS.version }),
         queryClient.invalidateQueries({ queryKey: ["admin", "activity-logs"] }),
       ]);
-      toast.success("System operational status refreshed.");
+      toast.success("System operational diagnostics refreshed.");
     } catch {
       toast.error("Failed to refresh system status.");
     } finally {
@@ -65,8 +76,19 @@ export default function AdminSystemHealthPage() {
     }
   };
 
-  const isHealthy = health?.status === "healthy";
+  const isHealthy = adminHealth
+    ? adminHealth.status === "healthy"
+    : publicHealth?.status === "healthy";
+  const isDegraded = adminHealth?.status === "degraded";
+  const isUnhealthy = adminHealth
+    ? adminHealth.status === "unhealthy"
+    : publicHealth?.status === "unhealthy";
+
+  const isOverallLoading = isAdminHealthLoading ?? publicHealthQuery?.isLoading;
+  const isOverallError = isAdminHealthError ?? publicHealthQuery?.isError;
+
   const recentActivities = activityLogsData?.data || [];
+  const warnings = adminHealth?.security_warnings || [];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -93,7 +115,7 @@ export default function AdminSystemHealthPage() {
               System Health
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-              Monitor the operational state of the NeuroCommerce platform, service availability, application health, and recent operational signals.
+              Monitor the operational state of the NeuroCommerce platform, service availability, application health, and authoritative diagnostic telemetry.
             </p>
           </div>
 
@@ -111,7 +133,7 @@ export default function AdminSystemHealthPage() {
               variant="primary"
               onClick={handleRefresh}
               isLoading={isRefreshing}
-              className="h-10 px-4 gap-2 text-xs font-bold shadow-xs"
+              className="h-10 px-4 gap-2 text-xs font-bold shadow-xs bg-blue-600 hover:bg-blue-700"
             >
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} aria-hidden="true" />
               <span>Refresh Status</span>
@@ -123,7 +145,7 @@ export default function AdminSystemHealthPage() {
       {/* ======================================================================= */}
       {/* 2. ERROR STATE                                                          */}
       {/* ======================================================================= */}
-      {isHealthError ? (
+      {isOverallError ? (
         <div className="p-8 text-center rounded-[20px] bg-white border border-rose-200 shadow-2xs space-y-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 mx-auto">
             <AlertCircle className="h-6 w-6" aria-hidden="true" />
@@ -137,8 +159,11 @@ export default function AdminSystemHealthPage() {
           <Button
             type="button"
             variant="primary"
-            onClick={() => refetchHealth()}
-            className="h-10 px-5 text-xs font-bold"
+            onClick={() => {
+              if (refetchAdminHealth) refetchAdminHealth();
+              if (publicHealthQuery?.refetch) publicHealthQuery.refetch();
+            }}
+            className="h-10 px-5 text-xs font-bold bg-blue-600 hover:bg-blue-700"
           >
             Retry
           </Button>
@@ -148,7 +173,7 @@ export default function AdminSystemHealthPage() {
           {/* ======================================================================= */}
           {/* 3. SYSTEM STATUS HERO                                                   */}
           {/* ======================================================================= */}
-          {isHealthLoading ? (
+          {isOverallLoading ? (
             <div className="p-6 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-3">
               <Skeleton className="h-6 w-48" />
               <Skeleton className="h-4 w-96" />
@@ -160,32 +185,46 @@ export default function AdminSystemHealthPage() {
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
                     isHealthy
                       ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                      : isDegraded
+                      ? "bg-amber-50 text-amber-600 border border-amber-200"
                       : "bg-rose-50 text-rose-600 border border-rose-200"
                   }`}
                 >
                   {isHealthy ? (
                     <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
-                  ) : (
+                  ) : isDegraded ? (
                     <AlertTriangle className="h-6 w-6" aria-hidden="true" />
+                  ) : (
+                    <AlertCircle className="h-6 w-6" aria-hidden="true" />
                   )}
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
-                      {isHealthy ? "System Operational" : "Service Disruption Detected"}
+                      {isHealthy
+                        ? "System Operational"
+                        : isDegraded
+                        ? "Degraded Performance Detected"
+                        : "Service Disruption Detected"}
                     </h2>
                     <span
                       className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
                         isHealthy
                           ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : isDegraded
+                          ? "bg-amber-50 text-amber-700 border border-amber-200"
                           : "bg-rose-50 text-rose-700 border border-rose-200"
                       }`}
                     >
-                      {isHealthy ? "Healthy" : "Attention Required"}
+                      {isHealthy ? "Healthy" : isDegraded ? "Degraded" : "Attention Required"}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 max-w-xl">
-                    All core platform API micro-services, background pipelines, and security boundaries are responding normally.
+                    {isHealthy
+                      ? "All core platform API micro-services, background pipelines, and security boundaries are responding normally."
+                      : isDegraded
+                      ? "Some services are operating with elevated latency or configuration warnings. Core functions remain accessible."
+                      : "Critical infrastructure services are currently experiencing connection disruptions."}
                   </p>
                 </div>
               </div>
@@ -197,7 +236,13 @@ export default function AdminSystemHealthPage() {
                   </span>
                   <div className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <Clock className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
-                    <span>{healthUpdatedAt ? new Date(healthUpdatedAt).toLocaleTimeString() : "Just now"}</span>
+                    <span>
+                      {adminHealth?.checked_at
+                        ? new Date(adminHealth.checked_at).toLocaleTimeString()
+                        : adminHealthUpdatedAt
+                        ? new Date(adminHealthUpdatedAt).toLocaleTimeString()
+                        : "Just now"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -212,8 +257,12 @@ export default function AdminSystemHealthPage() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                 Platform Posture
               </span>
-              <span className="text-lg sm:text-xl font-extrabold text-emerald-700 mt-1 block">
-                {isHealthy ? "Operational" : "Degraded"}
+              <span
+                className={`text-lg sm:text-xl font-extrabold mt-1 block ${
+                  isHealthy ? "text-emerald-700" : isDegraded ? "text-amber-700" : "text-rose-700"
+                }`}
+              >
+                {isHealthy ? "Operational" : isDegraded ? "Degraded" : "Unhealthy"}
               </span>
             </div>
 
@@ -221,8 +270,8 @@ export default function AdminSystemHealthPage() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                 API Version
               </span>
-              <span className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1 block">
-                v{health?.version || version?.version || "1.0.0"}
+              <span className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1 block font-mono">
+                v{adminHealth?.application?.version || publicHealth?.version || publicVersion?.version || "1.0.0"}
               </span>
             </div>
 
@@ -231,7 +280,7 @@ export default function AdminSystemHealthPage() {
                 Framework Runtime
               </span>
               <span className="text-lg sm:text-xl font-extrabold text-blue-600 mt-1 block">
-                Laravel {version?.laravel ? version.laravel.split(".")[0] : "11"}
+                Laravel {adminHealth?.application?.laravel_version ? adminHealth.application.laravel_version.split(".")[0] : publicVersion?.laravel ? publicVersion.laravel.split(".")[0] : "11"}
               </span>
             </div>
 
@@ -239,14 +288,47 @@ export default function AdminSystemHealthPage() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                 PHP Engine
               </span>
-              <span className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1 block">
-                PHP {version?.php ? version.php.split(".").slice(0, 2).join(".") : "8.4"}
+              <span className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1 block font-mono">
+                PHP {adminHealth?.application?.php_version ? adminHealth.application.php_version.split(".").slice(0, 2).join(".") : publicVersion?.php ? publicVersion.php.split(".").slice(0, 2).join(".") : "8.4"}
               </span>
             </div>
           </div>
 
           {/* ======================================================================= */}
-          {/* 5. SERVICE HEALTH & OPERATIONAL SIGNALS (2-COLUMN)                      */}
+          {/* 5. SECURITY & CONFIGURATION WARNINGS PANEL (IF ANY)                     */}
+          {/* ======================================================================= */}
+          {warnings.length > 0 && (
+            <div className="p-5 rounded-[20px] bg-amber-50 border border-amber-200 shadow-2xs space-y-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                <h3 className="text-xs sm:text-sm font-extrabold text-amber-900">
+                  Configuration &amp; Security Advisories ({warnings.length})
+                </h3>
+              </div>
+              <div className="space-y-2">
+                {warnings.map((warn, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-xl bg-white border border-amber-200/80 text-xs text-amber-900 flex items-start gap-2.5"
+                  >
+                    <span
+                      className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-md shrink-0 ${
+                        warn.severity === "critical"
+                          ? "bg-rose-100 text-rose-800"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {warn.severity}
+                    </span>
+                    <span className="leading-relaxed font-medium">{warn.message}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================================= */}
+          {/* 6. SERVICE HEALTH & OPERATIONAL SIGNALS (2-COLUMN)                      */}
           {/* ======================================================================= */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left 2 Cols: Service Health Matrix */}
@@ -259,11 +341,11 @@ export default function AdminSystemHealthPage() {
                       <span>Monitored Services</span>
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Core application infrastructure, database persistence, and authorization endpoints.
+                      Authoritative diagnostics for database persistence, fast cache, queues, and storage.
                     </p>
                   </div>
                   <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                    5 Services
+                    6 Services
                   </span>
                 </div>
 
@@ -279,7 +361,7 @@ export default function AdminSystemHealthPage() {
                           Application REST API Gateway
                         </span>
                         <span className="text-[11px] text-slate-400 block truncate">
-                          v1 Router / Response Envelope Pipeline
+                          Laravel {adminHealth?.application?.laravel_version || publicVersion?.laravel || "11"} • PHP {adminHealth?.application?.php_version || publicVersion?.php || "8.4"}
                         </span>
                       </div>
                     </div>
@@ -299,71 +381,131 @@ export default function AdminSystemHealthPage() {
                         <span className="font-extrabold text-xs text-slate-900 block truncate">
                           Database Connectivity &amp; Persistence
                         </span>
-                        <span className="text-[11px] text-slate-400 block truncate">
-                          MySQL InnoDB / UUID Primary Key Indexing
+                        <span className="text-[11px] text-slate-400 block truncate font-mono">
+                          {adminHealth?.database?.connection ? adminHealth.database.connection.toUpperCase() : "MySQL"} • {adminHealth?.database?.database_name || "neurocommerce_ai"} {adminHealth?.database?.response_time_ms ? `(${adminHealth.database.response_time_ms} ms)` : ""}
                         </span>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold shrink-0">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-                      <span>Operational</span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold shrink-0 ${
+                        adminHealth?.database?.status === "healthy" || !adminHealth
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-rose-50 text-rose-700 border border-rose-200"
+                      }`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          adminHealth?.database?.status === "healthy" || !adminHealth
+                            ? "bg-emerald-500"
+                            : "bg-rose-500"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span>{adminHealth?.database?.status === "healthy" || !adminHealth ? "Operational" : "Failed"}</span>
                     </span>
                   </div>
 
-                  {/* Service 3: Authentication & RBAC */}
-                  <div className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 shrink-0">
-                        <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="font-extrabold text-xs text-slate-900 block truncate">
-                          Authentication &amp; RBAC Boundary
-                        </span>
-                        <span className="text-[11px] text-slate-400 block truncate">
-                          Laravel Sanctum / Permission Engine
-                        </span>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold shrink-0">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-                      <span>Operational</span>
-                    </span>
-                  </div>
-
-                  {/* Service 4: Security & Audit Logging */}
+                  {/* Service 3: Cache & Fast Storage */}
                   <div className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 shrink-0">
+                        <Zap className="h-4 w-4" aria-hidden="true" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="font-extrabold text-xs text-slate-900 block truncate">
+                          Cache Subsystem &amp; Session Store
+                        </span>
+                        <span className="text-[11px] text-slate-400 block truncate font-mono">
+                          Cache Driver: {adminHealth?.cache?.driver || "file"} {adminHealth?.cache?.response_time_ms ? `(${adminHealth.cache.response_time_ms} ms)` : ""}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold shrink-0 ${
+                        adminHealth?.cache?.status === "healthy" || !adminHealth
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border border-amber-200"
+                      }`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          adminHealth?.cache?.status === "healthy" || !adminHealth
+                            ? "bg-emerald-500"
+                            : "bg-amber-500"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span>{adminHealth?.cache?.status === "healthy" || !adminHealth ? "Operational" : "Degraded"}</span>
+                    </span>
+                  </div>
+
+                  {/* Service 4: Queue Infrastructure */}
+                  <div className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 shrink-0">
                         <Layers className="h-4 w-4" aria-hidden="true" />
                       </div>
                       <div className="min-w-0">
                         <span className="font-extrabold text-xs text-slate-900 block truncate">
-                          Security Audit &amp; Compliance Trail
+                          Queue &amp; Background Pipeline
                         </span>
                         <span className="text-[11px] text-slate-400 block truncate">
-                          State Mutation &amp; IP Origin Ledger
+                          Queue Driver: {adminHealth?.queue?.driver || "sync"} • Workers: {adminHealth?.queue?.worker_status || "Managed Externally"}
                         </span>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold shrink-0">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-                      <span>Operational</span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-extrabold shrink-0">
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" aria-hidden="true" />
+                      <span>Configured</span>
                     </span>
                   </div>
 
-                  {/* Service 5: System Configuration */}
+                  {/* Service 5: Media & Storage */}
                   <div className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
-                        <Cpu className="h-4 w-4" aria-hidden="true" />
+                        <HardDrive className="h-4 w-4" aria-hidden="true" />
                       </div>
                       <div className="min-w-0">
                         <span className="font-extrabold text-xs text-slate-900 block truncate">
-                          Configuration &amp; Controlled Rollout
+                          Media &amp; Local Storage Disk
                         </span>
                         <span className="text-[11px] text-slate-400 block truncate">
-                          Dynamic System Flags &amp; Canary Engine
+                          Disk: {adminHealth?.storage?.disk || "local"} • Writable: {adminHealth?.storage?.writable ? "Yes" : "ReadOnly"}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold shrink-0 ${
+                        adminHealth?.storage?.status === "healthy" || !adminHealth
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border border-amber-200"
+                      }`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          adminHealth?.storage?.status === "healthy" || !adminHealth
+                            ? "bg-emerald-500"
+                            : "bg-amber-500"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span>{adminHealth?.storage?.status === "healthy" || !adminHealth ? "Operational" : "Degraded"}</span>
+                    </span>
+                  </div>
+
+                  {/* Service 6: AI Intelligence Engine */}
+                  <div className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 shrink-0">
+                        <Sparkles className="h-4 w-4" aria-hidden="true" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="font-extrabold text-xs text-slate-900 block truncate">
+                          AI Recommendation Intelligence Engine
+                        </span>
+                        <span className="text-[11px] text-slate-400 block truncate">
+                          Provider: {adminHealth?.external_services?.[0]?.provider || "Active"}
                         </span>
                       </div>
                     </div>
@@ -375,17 +517,48 @@ export default function AdminSystemHealthPage() {
                 </div>
               </div>
 
-              {/* Incident & Security Notice Panel */}
-              <div className="p-5 sm:p-6 rounded-[20px] bg-emerald-50/50 border border-emerald-200/90 shadow-2xs space-y-2">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" aria-hidden="true" />
-                  <h3 className="text-xs sm:text-sm font-extrabold text-emerald-900">
-                    No Active Incidents Detected
-                  </h3>
+              {/* Quick Subsystem Navigation */}
+              <div className="p-5 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                  Quick Administration Portals
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                  <Link
+                    href="/admin/settings"
+                    className="flex items-center gap-1.5 p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors"
+                  >
+                    <Sliders className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Settings</span>
+                  </Link>
+                  <Link
+                    href="/admin/audit-logs"
+                    className="flex items-center gap-1.5 p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors"
+                  >
+                    <FileText className="h-3.5 w-3.5 text-amber-600" />
+                    <span>Audit Logs</span>
+                  </Link>
+                  <Link
+                    href="/admin/payments"
+                    className="flex items-center gap-1.5 p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors"
+                  >
+                    <CreditCard className="h-3.5 w-3.5 text-purple-600" />
+                    <span>Payments</span>
+                  </Link>
+                  <Link
+                    href="/admin/shipping"
+                    className="flex items-center gap-1.5 p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors"
+                  >
+                    <Truck className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Shipping</span>
+                  </Link>
+                  <Link
+                    href="/admin/system/feature-flags"
+                    className="flex items-center gap-1.5 p-2.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors"
+                  >
+                    <Flag className="h-3.5 w-3.5 text-rose-600" />
+                    <span>Flags</span>
+                  </Link>
                 </div>
-                <p className="text-xs text-emerald-700 leading-relaxed max-w-2xl">
-                  All platform sub-systems, catalog indexes, and fulfillment endpoints are reporting stable execution telemetry. Zero service interruptions reported.
-                </p>
               </div>
             </div>
 

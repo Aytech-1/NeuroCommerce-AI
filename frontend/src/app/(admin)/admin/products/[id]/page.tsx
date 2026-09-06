@@ -14,7 +14,7 @@ import {
   Clock,
   Archive,
   ChevronRight,
-  DollarSign,
+  Coins,
   Layers,
   Sparkles,
 } from "lucide-react";
@@ -242,7 +242,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       <tr key={v.id} className="hover:bg-slate-50/60">
                         <td className="py-3 pr-4 font-mono font-bold text-slate-900">{v.sku}</td>
                         <td className="py-3 pr-4 text-slate-600">
-                          {v.attribute_values?.map((av) => `${av.attribute?.name || "Option"}: ${av.value}`).join(", ") || "Default"}
+                          {v.attributes?.map((av) => `${av.attribute_name || "Option"}: ${av.value}`).join(", ") ||
+                           v.attribute_values?.map((av) => `${av.attribute?.name || "Option"}: ${av.value}`).join(", ") ||
+                           v.name ||
+                           "Default"}
                         </td>
                         <td className="py-3 pr-4 font-extrabold text-slate-900">
                           {v.price ? formatCurrency(v.price) : formatCurrency(product.base_price)}
@@ -271,7 +274,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           {/* Pricing & Stock Card */}
           <div className="p-6 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <DollarSign className="h-4 w-4 text-blue-600" aria-hidden="true" />
+              <Coins className="h-4 w-4 text-blue-600" aria-hidden="true" />
               <h2 className="text-base font-extrabold text-slate-900">Pricing &amp; Commercial</h2>
             </div>
 
@@ -279,13 +282,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <div className="flex items-center justify-between pt-1">
                 <span className="text-slate-500 font-medium">Base Price:</span>
                 <span className="font-extrabold text-base text-slate-900">
-                  {formatCurrency(product.base_price)}
+                  {formatCurrency(product.base_price, product.currency_code)}
                 </span>
               </div>
               {product.compare_at_price && (
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-slate-500 font-medium">Compare-At Price:</span>
-                  <span className="line-through text-slate-400 font-semibold">{formatCurrency(product.compare_at_price)}</span>
+                  <span className="line-through text-slate-400 font-semibold">{formatCurrency(product.compare_at_price, product.currency_code)}</span>
                 </div>
               )}
               <div className="flex items-center justify-between pt-2">

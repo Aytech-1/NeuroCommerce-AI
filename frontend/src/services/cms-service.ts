@@ -177,6 +177,11 @@ export const cmsService = {
     return response.data.data;
   },
 
+  async getPublicPage(slug: string): Promise<CmsPageItem> {
+    const response = await apiClient.get<ApiResponse<CmsPageItem>>(`/pages/${encodeURIComponent(slug)}`);
+    return response.data.data;
+  },
+
   async deleteTestimonial(id: string): Promise<void> {
     await apiClient.delete<ApiResponse<null>>(`/admin/testimonials/${id}`);
   },

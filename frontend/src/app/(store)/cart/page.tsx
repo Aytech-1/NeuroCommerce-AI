@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -62,9 +62,10 @@ export default function CartPage() {
         setCouponError(null);
         notify.success("Promo code applied");
       },
-      onError: (err: any) => {
+      onError: (err: unknown) => {
+        const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
         const message =
-          err?.response?.data?.message ||
+          errorObj?.response?.data?.message ||
           "Unable to apply promo code. Please check the code and try again.";
         setCouponError(message);
         notify.error("Unable to apply promo code");
@@ -278,9 +279,9 @@ export default function CartPage() {
                       <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
                         {/* Thumbnail Container */}
                         <div className="h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-2xl bg-[#F8FAFC] border border-slate-200/80 p-2 flex items-center justify-center shadow-2xs">
-                          {product?.primary_image?.url ? (
+                          {product?.primary_image_url || product?.primary_image?.url || (product as any)?.images?.[0]?.url ? (
                             <img
-                              src={product.primary_image.url}
+                              src={product?.primary_image_url || product?.primary_image?.url || (product as any)?.images?.[0]?.url}
                               alt={productName}
                               className="h-full w-full object-contain"
                             />

@@ -35,7 +35,7 @@ describe("Dashboard Sales & Revenue Chart Component", () => {
     );
 
     expect(screen.getByText(/sales & revenue curve/i)).toBeInTheDocument();
-    expect(screen.getByText(/total: \$5,850\.00 across 45 orders/i)).toBeInTheDocument();
+    expect(screen.getByText(/total: ₦5,850\.00 across 45 orders/i)).toBeInTheDocument();
     expect(container.querySelector("svg")).toBeInTheDocument();
     expect(container.querySelectorAll("circle").length).toBe(3);
   });

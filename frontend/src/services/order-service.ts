@@ -16,14 +16,18 @@ export interface OrderAddress {
 
 export interface OrderItem {
   id: string;
-  order_id: string;
+  order_id?: string;
   product_id?: string | null;
   variant_id?: string | null;
   product_name: string;
-  sku: string;
+  product_sku?: string;
+  sku?: string;
   unit_price: number;
   quantity: number;
-  total_price: number;
+  tax_amount?: number;
+  discount_amount?: number;
+  line_total?: number;
+  total_price?: number;
   options?: Record<string, string> | null;
 }
 
@@ -84,6 +88,24 @@ export interface OrderDetail extends OrderListItem {
   items?: OrderItem[];
   status_history?: OrderStatusHistoryItem[];
   invoices?: InvoiceItem[];
+  shipments?: Array<{
+    id: string;
+    order_id: string;
+    tracking_number?: string | null;
+    carrier_name?: string | null;
+    status: string;
+    status_label?: string;
+    shipped_at?: string | null;
+    estimated_delivery_at?: string | null;
+    delivered_at?: string | null;
+    tracking_events?: Array<{
+      id: string;
+      status: string;
+      description: string;
+      location?: string | null;
+      occurred_at: string;
+    }>;
+  }>;
   placed_at?: string | null;
   paid_at?: string | null;
   shipped_at?: string | null;

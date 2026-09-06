@@ -3,7 +3,8 @@ import { ApiResponse, PaginationMeta } from "@/types/api";
 
 export interface AuditLogItem {
   id: string;
-  user_id: string;
+  user_id?: string | null;
+  user_type?: string | null;
   user?: {
     id: string;
     name: string;
@@ -14,6 +15,7 @@ export interface AuditLogItem {
   auditable_id: string;
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
+  url?: string | null;
   ip_address?: string | null;
   user_agent?: string | null;
   tags?: string[] | null;
@@ -22,7 +24,7 @@ export interface AuditLogItem {
 
 export interface ActivityLogItem {
   id: string;
-  user_id: string;
+  user_id?: string | null;
   user?: {
     id: string;
     name: string;
@@ -38,9 +40,12 @@ export interface ActivityLogItem {
 export interface AuditQueryParams {
   page?: number;
   per_page?: number;
+  search?: string;
   event?: string;
   auditable_type?: string;
   user_id?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 export const auditService = {
@@ -50,9 +55,12 @@ export const auditService = {
       per_page: params.per_page,
     };
 
+    if (params.search) queryParams["filter[search]"] = params.search;
     if (params.event) queryParams["filter[event]"] = params.event;
     if (params.auditable_type) queryParams["filter[auditable_type]"] = params.auditable_type;
     if (params.user_id) queryParams["filter[user_id]"] = params.user_id;
+    if (params.date_from) queryParams["filter[date_from]"] = params.date_from;
+    if (params.date_to) queryParams["filter[date_to]"] = params.date_to;
 
     const response = await apiClient.get<ApiResponse<AuditLogItem[]>>("/admin/audit-logs", {
       params: queryParams,

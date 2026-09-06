@@ -6,17 +6,20 @@ import { Sparkles, ArrowRight, ChevronLeft, ChevronRight, AlertCircle } from "lu
 import { Container } from "@/components/ui/container";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductCard } from "@/components/store/product-card";
-import { useTrendingRecommendations } from "@/hooks/use-storefront";
+import { useSmartRecommendations } from "@/hooks/use-storefront";
 import { useAuthStore } from "@/stores/auth-store";
 
 export function AiRecommendations() {
   const { isAuthenticated } = useAuthStore();
-  const { data: products, isLoading, isError } = useTrendingRecommendations(8);
+  const { data, isLoading, isError } = useSmartRecommendations(8);
+
+  const products = data?.items ?? [];
+  const isPersonalized = data?.isPersonalized ?? false;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 4;
 
-  const totalProducts = products?.length ?? 0;
+  const totalProducts = products.length;
   const canGoPrev = currentIndex > 0;
   const canGoNext = currentIndex + itemsPerPage < totalProducts;
 
@@ -32,10 +35,11 @@ export function AiRecommendations() {
     }
   };
 
-  const visibleProducts = products?.slice(currentIndex, currentIndex + itemsPerPage) ?? [];
+  const visibleProducts = products.slice(currentIndex, currentIndex + itemsPerPage);
 
   return (
     <section
+      id="ai-recommendations"
       aria-labelledby="ai-recommendations-heading"
       className="relative py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-[#F8FAFC]/80 via-white to-[#F8FAFC]/40 border-b border-slate-100 overflow-hidden"
     >
@@ -71,11 +75,11 @@ export function AiRecommendations() {
             {/* AI Status Badge */}
             <div className="flex flex-wrap items-center gap-3 mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                AI-POWERED DISCOVERY
+                {isPersonalized ? "PERSONALIZED SELECTION" : "AI-POWERED DISCOVERY"}
               </span>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-600 text-xs font-semibold shadow-2xs">
                 <Sparkles className="h-3.5 w-3.5 text-blue-600" aria-hidden="true" />
-                <span>AI Recommendation Engine</span>
+                <span>{isPersonalized ? "Tailored to Your Activity" : "AI Recommendation Engine"}</span>
               </div>
             </div>
 
@@ -84,23 +88,26 @@ export function AiRecommendations() {
               id="ai-recommendations-heading"
               className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900"
             >
-              Technology Selected Intelligently for You
+              {isPersonalized
+                ? "Recommended Specifically for You"
+                : "Technology Selected Intelligently for You"}
             </h2>
 
             {/* Supporting Text */}
             <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
-              Our recommendation engine analyzes product signals to help you discover technology that
-              matches your interests and needs.
+              {isPersonalized
+                ? "Curated based on your browsing patterns, neuro-device preferences, and past orders."
+                : "Our recommendation engine analyzes product telemetry, demand velocity, and user interest to highlight high-performance devices."}
             </p>
           </div>
 
           {/* Header Right: Carousel Navigation Controls & Link */}
           <div className="flex items-center gap-4 shrink-0">
             <Link
-              href="/products"
+              href="/recommendations"
               className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors group"
             >
-              <span>Explore Recommendations</span>
+              <span>Explore All Recommendations</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
 
@@ -111,7 +118,7 @@ export function AiRecommendations() {
                   onClick={handlePrev}
                   disabled={!canGoPrev}
                   aria-label="Previous recommendations"
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 shadow-xs transition-all disabled:opacity-40 disabled:pointer-events-none active:scale-95"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 shadow-xs transition-all disabled:opacity-40 disabled:pointer-events-none active:scale-95 cursor-pointer"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
@@ -119,7 +126,7 @@ export function AiRecommendations() {
                   onClick={handleNext}
                   disabled={!canGoNext}
                   aria-label="Next recommendations"
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 shadow-xs transition-all disabled:opacity-40 disabled:pointer-events-none active:scale-95"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 shadow-xs transition-all disabled:opacity-40 disabled:pointer-events-none active:scale-95 cursor-pointer"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -195,10 +202,10 @@ export function AiRecommendations() {
         {/* Mobile View All Link */}
         <div className="sm:hidden mt-8 text-center">
           <Link
-            href="/products"
+            href="/recommendations"
             className="inline-flex items-center gap-1.5 text-sm font-bold text-blue-600 hover:text-blue-700"
           >
-            <span>Explore Recommendations</span>
+            <span>Explore All Recommendations</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

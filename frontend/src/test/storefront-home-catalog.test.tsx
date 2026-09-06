@@ -15,6 +15,9 @@ import { ProductItem } from "@/services/catalog-service";
 vi.mock("@/hooks/use-storefront", () => ({
   useFeaturedProducts: vi.fn(),
   useTrendingRecommendations: vi.fn(),
+  useSmartRecommendations: vi.fn(() => ({ data: { items: [], isPersonalized: false }, isLoading: false, isError: false })),
+  usePersonalizedRecommendations: vi.fn(() => ({ data: [], isLoading: false, isError: false })),
+  useRecentlyViewedRecommendations: vi.fn(() => ({ data: [], isLoading: false, isError: false })),
   useDealsProducts: vi.fn(() => ({ data: { data: [] }, isLoading: false, isError: false })),
   useCategoriesTree: vi.fn(),
   usePublicProducts: vi.fn(),
@@ -81,7 +84,7 @@ describe("Storefront Home & Catalog Suite", () => {
 
     expect(screen.getByText(/Precision Technology for the Next Generation/i)).toBeInTheDocument();
     expect(screen.getByText("Neural Interface V2 Pro")).toBeInTheDocument();
-    expect(screen.getByText("$499.99")).toBeInTheDocument();
+    expect(screen.getByText("₦499.99")).toBeInTheDocument();
   });
 
   it("renders catalog product listing with product cards and filter sidebar", () => {

@@ -30,7 +30,7 @@ class CartCouponIntegrationTest extends TestCase
 
         $this->customer = User::factory()->create();
         $this->product = Product::factory()->create([
-            'base_price' => 100.0,
+            'base_price' => 100000.0,
             'status' => ProductStatus::ACTIVE,
             'is_active' => true,
         ]);
@@ -58,23 +58,23 @@ class CartCouponIntegrationTest extends TestCase
         ]);
         $addItemResponse->assertStatus(201);
 
-        // Apply WELCOME10 (10% discount on $100 = $10)
+        // Apply WELCOME10 (10% discount on ₦100,000 = ₦10,000)
         $applyResponse = $this->postJson('/api/v1/cart/coupon', [
             'code' => 'WELCOME10',
         ]);
 
         $applyResponse->assertStatus(200)
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.subtotal', fn ($v) => (float) $v === 100.0)
+            ->assertJsonPath('data.subtotal', fn ($v) => (float) $v === 100000.0)
             ->assertJsonPath('data.notes', 'Coupon: WELCOME10');
 
         // Check cart summary
         $summaryResponse = $this->getJson('/api/v1/cart/summary');
         $summaryResponse->assertStatus(200)
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.subtotal', fn ($v) => (float) $v === 100.0)
-            ->assertJsonPath('data.discount', fn ($v) => (float) $v === 10.0)
-            ->assertJsonPath('data.total', fn ($v) => (float) $v === 90.0)
+            ->assertJsonPath('data.subtotal', fn ($v) => (float) $v === 100000.0)
+            ->assertJsonPath('data.discount', fn ($v) => (float) $v === 10000.0)
+            ->assertJsonPath('data.total', fn ($v) => (float) $v === 90000.0)
             ->assertJsonPath('data.coupon_code', 'WELCOME10');
 
         // Remove coupon
@@ -88,6 +88,6 @@ class CartCouponIntegrationTest extends TestCase
         $summaryAfterRemoval->assertStatus(200)
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.discount', fn ($v) => (float) $v === 0.0)
-            ->assertJsonPath('data.total', fn ($v) => (float) $v === 100.0);
+            ->assertJsonPath('data.total', fn ($v) => (float) $v === 100000.0);
     }
 }

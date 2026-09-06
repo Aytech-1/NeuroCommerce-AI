@@ -38,6 +38,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'active' => \App\Shared\Middleware\EnsureUserIsActive::class,
             'verified' => \App\Shared\Middleware\EnsureEmailIsVerified::class,
+            'throttle' => \App\Shared\Middleware\ApiRateLimiter::class,
+            'rate_limit' => \App\Shared\Middleware\ApiRateLimiter::class,
         ]);
 
         // Append audit logging for admin routes

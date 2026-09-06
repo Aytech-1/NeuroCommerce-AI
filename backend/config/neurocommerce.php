@@ -69,7 +69,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'currency' => [
-        'default' => env('DEFAULT_CURRENCY', 'USD'),
+        'default' => env('DEFAULT_CURRENCY', 'NGN'),
         'supported' => ['USD', 'EUR', 'GBP', 'NGN'],
     ],
 

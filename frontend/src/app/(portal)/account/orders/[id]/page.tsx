@@ -448,14 +448,14 @@ export default function CustomerOrderDetailPage({ params }: { params: Promise<{ 
               <div className="flex justify-between text-slate-500 font-medium">
                 <span>Certified Logistics</span>
                 <span className="font-semibold text-slate-900">
-                  {order.shipping_amount ? formatCurrency(order.shipping_amount) : "$0.00"}
+                  {order.shipping_amount ? formatCurrency(order.shipping_amount) : formatCurrency(0)}
                 </span>
               </div>
 
               <div className="flex justify-between text-slate-500 font-medium">
                 <span>Estimated Tax</span>
                 <span className="font-semibold text-slate-900">
-                  {order.tax_amount ? formatCurrency(order.tax_amount) : "$0.00"}
+                  {order.tax_amount ? formatCurrency(order.tax_amount) : formatCurrency(0)}
                 </span>
               </div>
 

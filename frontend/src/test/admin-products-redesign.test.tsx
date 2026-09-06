@@ -33,6 +33,12 @@ vi.mock("@/hooks/use-catalog", () => ({
   useBrands: vi.fn(),
   useDeleteProduct: vi.fn(),
   useUpdateProductStatus: vi.fn(),
+  useUploadProductImages: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useDeleteProductImage: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useReorderProductImages: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useCreateVariant: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useUpdateVariant: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useDeleteVariant: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
 }));
 
 vi.mock("@/services/catalog-service", () => ({
@@ -152,13 +158,13 @@ describe("Admin Product Catalog & Inventory Management Suite (STEP 27.2)", () =>
 
     expect(screen.getByText("Neural Interface V2 Pro")).toBeInTheDocument();
     expect(screen.getByText("NIV2-PRO-01")).toBeInTheDocument();
-    expect(screen.getByText("$4,999.00")).toBeInTheDocument();
+    expect(screen.getByText("₦4,999.00")).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "Interfaces" })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: /active/i })).toBeInTheDocument();
 
     expect(screen.getByText("EEG Wireless Dry Cap")).toBeInTheDocument();
     expect(screen.getByText("EEG-CAP-DRY")).toBeInTheDocument();
-    expect(screen.getByText("$1,250.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,250.00")).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: /draft/i })).toBeInTheDocument();
   });
 
@@ -196,7 +202,7 @@ describe("Admin Product Catalog & Inventory Management Suite (STEP 27.2)", () =>
     expect(screen.getByRole("heading", { name: /create new product/i, level: 1 })).toBeInTheDocument();
     expect(screen.getByLabelText(/product name \*/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/sku \(stock keeping unit\) \*/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/base price \(\$\) \*/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/base price \(₦\) \*/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /save product/i })).toBeInTheDocument();
   });
 });

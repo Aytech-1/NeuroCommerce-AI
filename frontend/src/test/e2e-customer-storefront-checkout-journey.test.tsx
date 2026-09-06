@@ -29,6 +29,9 @@ vi.mock("@/hooks/use-storefront", () => ({
   useStorefrontProducts: vi.fn(),
   useFeaturedProducts: vi.fn(),
   useTrendingRecommendations: vi.fn(),
+  useSmartRecommendations: vi.fn().mockReturnValue({ data: { items: [], isPersonalized: false }, isLoading: false, isError: false }),
+  usePersonalizedRecommendations: vi.fn().mockReturnValue({ data: [], isLoading: false, isError: false }),
+  useRecentlyViewedRecommendations: vi.fn().mockReturnValue({ data: [], isLoading: false, isError: false }),
   useDealsProducts: vi.fn().mockReturnValue({ data: { data: [] }, isLoading: false, isError: false }),
   usePublicProducts: vi.fn(),
   useProductBySlug: vi.fn(),
@@ -36,6 +39,7 @@ vi.mock("@/hooks/use-storefront", () => ({
   useSimilarRecommendations: vi.fn().mockReturnValue({ data: [] }),
   useAddToCart: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
   useToggleWishlist: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
+  useSubmitReview: vi.fn().mockReturnValue({ mutate: vi.fn(), isPending: false }),
   useStorefrontCategories: vi.fn(),
   useCategoriesTree: vi.fn().mockReturnValue({ data: [{ id: "cat-1", name: "EEG Headsets", slug: "eeg-headsets", children: [] }] }),
   useBrands: vi.fn().mockReturnValue({ data: [{ id: "b-1", name: "NeuroPulse", slug: "neuropulse" }] }),
@@ -171,7 +175,7 @@ describe("End-to-End Customer Storefront & Checkout Journey", () => {
     render(<CartPage />);
     expect(screen.getByText("Shopping Bag")).toBeInTheDocument();
     expect(screen.getByText("Clinical Neuro-Telemetry Cap V3")).toBeInTheDocument();
-    expect(screen.getAllByText("$1,250.00").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("₦1,250.00").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("button", { name: /proceed to checkout/i })).toBeInTheDocument();
   });
 

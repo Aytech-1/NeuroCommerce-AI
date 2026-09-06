@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import AdminCategoriesPage from "@/app/(admin)/admin/categories/page";
-import { useCategories } from "@/hooks/use-catalog";
-import { catalogService } from "@/services/catalog-service";
+import * as catalogHooks from "@/hooks/use-catalog";
+import * as categoryHooks from "@/hooks/use-categories";
+import { categoryService } from "@/services/category-service";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -19,20 +20,13 @@ vi.mock("@/components/ui/can", () => ({
   Can: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock("@/hooks/use-catalog", () => ({
-  useCategories: vi.fn(),
-}));
-
-vi.mock("@/services/catalog-service", () => ({
-  catalogService: {
+vi.mock("@/services/category-service", () => ({
+  categoryService: {
+    getCategories: vi.fn(),
     createCategory: vi.fn(),
+    updateCategory: vi.fn(),
+    deleteCategory: vi.fn(),
   },
-}));
-
-vi.mock("@tanstack/react-query", () => ({
-  useQueryClient: () => ({
-    invalidateQueries: vi.fn(),
-  }),
 }));
 
 const mockCategories = [
@@ -55,14 +49,33 @@ const mockCategories = [
 ];
 
 describe("Admin Category Management & Taxonomy Suite (STEP 27.3)", () => {
+  const mockCreateMutate = vi.fn();
+  const mockUpdateMutate = vi.fn();
+  const mockDeleteMutate = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(useCategories).mockReturnValue({
+    vi.spyOn(categoryHooks, "useCategories").mockReturnValue({
       data: mockCategories,
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
+    } as any);
+
+    vi.spyOn(categoryHooks, "useCreateCategory").mockReturnValue({
+      mutateAsync: mockCreateMutate,
+      isPending: false,
+    } as any);
+
+    vi.spyOn(categoryHooks, "useUpdateCategory").mockReturnValue({
+      mutateAsync: mockUpdateMutate,
+      isPending: false,
+    } as any);
+
+    vi.spyOn(categoryHooks, "useDeleteCategory").mockReturnValue({
+      mutateAsync: mockDeleteMutate,
+      isPending: false,
     } as any);
   });
 
@@ -79,11 +92,11 @@ describe("Admin Category Management & Taxonomy Suite (STEP 27.3)", () => {
     render(<AdminCategoriesPage />);
 
     expect(screen.getByText("Total Categories")).toBeInTheDocument();
-    expect(screen.getByText("2 Categories")).toBeInTheDocument();
+    expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByText("Active Taxonomies")).toBeInTheDocument();
     expect(screen.getByText("1 Active")).toBeInTheDocument();
     expect(screen.getByText("Assigned Products")).toBeInTheDocument();
-    expect(screen.getByText("20 Products")).toBeInTheDocument();
+    expect(screen.getByText("20")).toBeInTheDocument();
   });
 
   it("3. Filter Toolbar & Search: updates search query and filters categories", () => {
@@ -112,7 +125,7 @@ describe("Admin Category Management & Taxonomy Suite (STEP 27.3)", () => {
   });
 
   it("5. Creation Dialog Flow: opens modal and submits new category payload", async () => {
-    vi.mocked(catalogService.createCategory).mockResolvedValueOnce({
+    mockCreateMutate.mockResolvedValueOnce({
       id: "cat-new-3",
       name: "Optical Neuro-Imaging",
       slug: "optical-neuro-imaging",
@@ -126,30 +139,32 @@ describe("Admin Category Management & Taxonomy Suite (STEP 27.3)", () => {
 
     expect(screen.getByText("Create New Category")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText(/e\.g\. Audio & Sound/i), {
+    fireEvent.change(screen.getByLabelText(/category name \*/i), {
       target: { value: "Optical Neuro-Imaging" },
     });
-    fireEvent.change(screen.getByPlaceholderText(/e\.g\. audio-sound/i), {
+    fireEvent.change(screen.getByLabelText(/url slug/i), {
       target: { value: "optical-neuro-imaging" },
     });
-    fireEvent.change(screen.getByPlaceholderText(/brief category description/i), {
+    fireEvent.change(screen.getByLabelText(/description/i), {
       target: { value: "Near-infrared spectroscopy sensors" },
     });
 
     fireEvent.click(screen.getByRole("button", { name: /^create category$/i }));
 
     await waitFor(() => {
-      expect(catalogService.createCategory).toHaveBeenCalledWith({
-        name: "Optical Neuro-Imaging",
-        slug: "optical-neuro-imaging",
-        description: "Near-infrared spectroscopy sensors",
-        is_active: true,
-      });
+      expect(mockCreateMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Optical Neuro-Imaging",
+          slug: "optical-neuro-imaging",
+          description: "Near-infrared spectroscopy sensors",
+          is_active: true,
+        })
+      );
     });
   });
 
   it("6. Empty State: renders taxonomy empty state when no categories exist", () => {
-    vi.mocked(useCategories).mockReturnValue({
+    vi.spyOn(categoryHooks, "useCategories").mockReturnValue({
       data: [],
       isLoading: false,
       isError: false,
@@ -159,6 +174,6 @@ describe("Admin Category Management & Taxonomy Suite (STEP 27.3)", () => {
     render(<AdminCategoriesPage />);
 
     expect(screen.getByText("No Categories Found")).toBeInTheDocument();
-    expect(screen.getByText("Create Category")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create Category" })).toBeInTheDocument();
   });
 });

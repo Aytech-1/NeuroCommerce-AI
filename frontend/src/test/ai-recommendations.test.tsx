@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AiRecommendations } from "@/components/store/ai-recommendations";
-import { useTrendingRecommendations, useAddToCart } from "@/hooks/use-storefront";
+import { useSmartRecommendations, useAddToCart } from "@/hooks/use-storefront";
 import { ProductItem } from "@/services/catalog-service";
 
 vi.mock("@/hooks/use-storefront", () => ({
-  useTrendingRecommendations: vi.fn(),
+  useSmartRecommendations: vi.fn(),
   useAddToCart: vi.fn(),
 }));
 
@@ -100,49 +100,44 @@ describe("AI-Powered Recommendations Suite", () => {
   });
 
   it("1. Section Header: renders AI eyebrow, AI status badge, H2 heading, and subtitle", () => {
-    vi.mocked(useTrendingRecommendations).mockReturnValue({
-      data: mockRecommendations,
+    vi.mocked(useSmartRecommendations).mockReturnValue({
+      data: { items: mockRecommendations, isPersonalized: false },
       isLoading: false,
       isError: false,
     } as any);
 
     render(<AiRecommendations />);
 
-    // Accessible landmark
     expect(screen.getByRole("region", { name: /technology selected intelligently for you/i })).toBeInTheDocument();
-
-    // Badges & Headings
     expect(screen.getByText("AI-POWERED DISCOVERY")).toBeInTheDocument();
     expect(screen.getByText("AI Recommendation Engine")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: /technology selected intelligently for you/i })).toBeInTheDocument();
-    expect(screen.getByText(/Our recommendation engine analyzes product signals/i)).toBeInTheDocument();
+    expect(screen.getByText(/Our recommendation engine analyzes product telemetry/i)).toBeInTheDocument();
 
-    // Explore Recommendations Link
-    const exploreLinks = screen.getAllByRole("link", { name: /explore recommendations/i });
+    const exploreLinks = screen.getAllByRole("link", { name: /explore all recommendations/i });
     expect(exploreLinks.length).toBeGreaterThanOrEqual(1);
-    expect(exploreLinks[0]).toHaveAttribute("href", "/products");
+    expect(exploreLinks[0]).toHaveAttribute("href", "/recommendations");
   });
 
   it("2. Products Display: renders recommended products and integrates with ProductCard", () => {
-    vi.mocked(useTrendingRecommendations).mockReturnValue({
-      data: mockRecommendations,
+    vi.mocked(useSmartRecommendations).mockReturnValue({
+      data: { items: mockRecommendations, isPersonalized: false },
       isLoading: false,
       isError: false,
     } as any);
 
     render(<AiRecommendations />);
 
-    // 4 visible items
     expect(screen.getByText("Synaptic BCI Telemetry Unit")).toBeInTheDocument();
     expect(screen.getByText("Cortex Bio-Amplifier V4")).toBeInTheDocument();
     expect(screen.getByText("Neural Wrist Telemetry Band")).toBeInTheDocument();
     expect(screen.getByText("Precision EEG Electrode Gel Kit")).toBeInTheDocument();
-    expect(screen.getByText("$849.00")).toBeInTheDocument();
+    expect(screen.getByText("₦849.00")).toBeInTheDocument();
   });
 
   it("3. Carousel Navigation: navigates between recommendation pages when products > 4", () => {
-    vi.mocked(useTrendingRecommendations).mockReturnValue({
-      data: mockRecommendations,
+    vi.mocked(useSmartRecommendations).mockReturnValue({
+      data: { items: mockRecommendations, isPersonalized: false },
       isLoading: false,
       isError: false,
     } as any);
@@ -155,16 +150,14 @@ describe("AI-Powered Recommendations Suite", () => {
     expect(prevBtn).toBeDisabled();
     expect(nextBtn).toBeEnabled();
 
-    // Click next
     fireEvent.click(nextBtn);
 
-    // 5th product is now visible
     expect(screen.getByText("High-Frequency Neural Probe")).toBeInTheDocument();
     expect(prevBtn).toBeEnabled();
   });
 
   it("4. Loading State: displays recommendation skeletons during fetch", () => {
-    vi.mocked(useTrendingRecommendations).mockReturnValue({
+    vi.mocked(useSmartRecommendations).mockReturnValue({
       data: undefined,
       isLoading: true,
       isError: false,
@@ -177,7 +170,7 @@ describe("AI-Powered Recommendations Suite", () => {
   });
 
   it("5. Error State: renders clean fallback when recommendation API fails", () => {
-    vi.mocked(useTrendingRecommendations).mockReturnValue({
+    vi.mocked(useSmartRecommendations).mockReturnValue({
       data: undefined,
       isLoading: false,
       isError: true,
@@ -189,8 +182,8 @@ describe("AI-Powered Recommendations Suite", () => {
   });
 
   it("6. Empty State: renders friendly fallback when 0 recommendations returned", () => {
-    vi.mocked(useTrendingRecommendations).mockReturnValue({
-      data: [],
+    vi.mocked(useSmartRecommendations).mockReturnValue({
+      data: { items: [], isPersonalized: false },
       isLoading: false,
       isError: false,
     } as any);
@@ -198,5 +191,18 @@ describe("AI-Powered Recommendations Suite", () => {
     render(<AiRecommendations />);
     expect(screen.getByText("Discover Technology You'll Love")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /explore catalog/i })).toHaveAttribute("href", "/products");
+  });
+
+  it("7. Personalized State: displays personalized badge and text when user is authenticated", () => {
+    vi.mocked(useSmartRecommendations).mockReturnValue({
+      data: { items: mockRecommendations, isPersonalized: true },
+      isLoading: false,
+      isError: false,
+    } as any);
+
+    render(<AiRecommendations />);
+    expect(screen.getByText("PERSONALIZED SELECTION")).toBeInTheDocument();
+    expect(screen.getByText("Tailored to Your Activity")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /recommended specifically for you/i })).toBeInTheDocument();
   });
 });

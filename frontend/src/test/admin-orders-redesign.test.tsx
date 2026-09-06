@@ -197,11 +197,11 @@ describe("Admin Orders & Fulfillment Management Suite (STEP 27.5)", () => {
     expect(screen.getByText("Sarah Connor")).toBeInTheDocument();
     expect(screen.getByText("sarah@example.com")).toBeInTheDocument();
     expect(screen.getByText("2 items")).toBeInTheDocument();
-    expect(screen.getByText("$549.99")).toBeInTheDocument();
+    expect(screen.getByText("₦549.99")).toBeInTheDocument();
 
     expect(screen.getByText("ORD-2026-1002")).toBeInTheDocument();
     expect(screen.getByText("Miles Dyson")).toBeInTheDocument();
-    expect(screen.getByText("$1,250.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,250.00")).toBeInTheDocument();
   });
 
   it("5. Order Detail Inspection: renders line items, financial summary, and customer delivery", async () => {
@@ -214,7 +214,7 @@ describe("Admin Orders & Fulfillment Management Suite (STEP 27.5)", () => {
     expect(screen.getByText("Neural Interface V2 Pro")).toBeInTheDocument();
     expect(screen.getByText(/NIV2-PRO-01/i)).toBeInTheDocument();
     expect(screen.getByText("Financial Breakdown")).toBeInTheDocument();
-    expect(screen.getByText("$510.00")).toBeInTheDocument();
+    expect(screen.getByText("₦510.00")).toBeInTheDocument();
     expect(screen.getByText("123 Cyber Way")).toBeInTheDocument();
     expect(screen.getByText("Express Laboratory Freight")).toBeInTheDocument();
   });

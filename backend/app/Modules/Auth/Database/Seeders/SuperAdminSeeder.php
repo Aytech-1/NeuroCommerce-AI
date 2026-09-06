@@ -35,7 +35,7 @@ class SuperAdminSeeder extends Seeder
                 'is_active' => true,
                 'email_verified_at' => now(),
                 'locale' => 'en',
-                'currency_code' => 'USD',
+                'currency_code' => 'NGN',
                 'timezone' => 'UTC',
             ]
         );
@@ -64,7 +64,7 @@ class SuperAdminSeeder extends Seeder
                 'is_active' => true,
                 'email_verified_at' => now(),
                 'locale' => 'en',
-                'currency_code' => 'USD',
+                'currency_code' => 'NGN',
                 'timezone' => 'UTC',
             ]
         );

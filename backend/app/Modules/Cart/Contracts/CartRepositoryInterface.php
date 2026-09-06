@@ -29,12 +29,12 @@ interface CartRepositoryInterface extends BaseRepositoryInterface
     /**
      * Get or create a cart for an authenticated user.
      */
-    public function getOrCreateForUser(string $userId, string $currency = 'USD'): Cart;
+    public function getOrCreateForUser(string $userId, ?string $currency = null): Cart;
 
     /**
      * Get or create a cart for an anonymous session.
      */
-    public function getOrCreateForSession(string $sessionId, string $currency = 'USD', int $ttlDays = 7): Cart;
+    public function getOrCreateForSession(string $sessionId, ?string $currency = null, int $ttlDays = 7): Cart;
 
     /**
      * Find a specific item inside a cart.

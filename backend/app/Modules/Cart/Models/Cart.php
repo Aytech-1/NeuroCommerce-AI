@@ -99,7 +99,7 @@ class Cart extends Model implements AuditableContract
      */
     public function calculateSubtotal(): Money
     {
-        $currency = $this->currency_code ?: 'USD';
+        $currency = $this->currency_code ?: (string) config('neurocommerce.currency.default', 'NGN');
         $totalCents = 0;
 
         foreach ($this->items as $item) {

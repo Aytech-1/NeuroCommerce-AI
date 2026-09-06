@@ -16,10 +16,10 @@ export function AuthFooter() {
         </div>
 
         <div className="flex items-center gap-5 text-slate-500 font-medium">
-          <Link href="/cms/pages/privacy-policy" className="hover:text-blue-600 transition-colors">
+          <Link href="/privacy" className="hover:text-blue-600 transition-colors">
             Privacy Policy
           </Link>
-          <Link href="/cms/pages/terms-of-service" className="hover:text-blue-600 transition-colors">
+          <Link href="/terms" className="hover:text-blue-600 transition-colors">
             Terms of Service
           </Link>
           <Link href="/cms/pages/support" className="hover:text-blue-600 transition-colors">

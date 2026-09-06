@@ -83,8 +83,8 @@ describe("Customer Wishlist & Saved Products Suite (STEP 26.10)", () => {
     expect(screen.getByText("Neural Interface V2 Pro")).toBeInTheDocument();
     expect(screen.getByText("EEG Wireless Cap")).toBeInTheDocument();
     expect(screen.getByText("SKU: NIV2-PRO")).toBeInTheDocument();
-    expect(screen.getByText("$549.99")).toBeInTheDocument();
-    expect(screen.getByText("$299.00")).toBeInTheDocument();
+    expect(screen.getByText("₦549.99")).toBeInTheDocument();
+    expect(screen.getByText("₦299.00")).toBeInTheDocument();
     expect(screen.getAllByText("In Stock").length).toBe(2);
   });
 

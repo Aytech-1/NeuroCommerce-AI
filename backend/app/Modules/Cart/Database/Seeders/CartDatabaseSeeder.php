@@ -21,13 +21,13 @@ class CartDatabaseSeeder extends Seeder
 
         if ($customer && $products->isNotEmpty()) {
             // Seed customer cart
-            $cart = Cart::firstOrCreate(
+            $cart = Cart::updateOrCreate(
                 ['user_id' => $customer->id],
-                ['currency_code' => 'USD']
+                ['currency_code' => 'NGN']
             );
 
             foreach ($products as $product) {
-                CartItem::firstOrCreate(
+                CartItem::updateOrCreate(
                     [
                         'cart_id' => $cart->id,
                         'product_id' => $product->id,

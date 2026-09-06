@@ -24,4 +24,8 @@ Route::prefix('api/v1/admin')->middleware(['api', 'auth:sanctum'])->group(functi
     Route::get('refunds', [RefundController::class, 'index'])
         ->middleware('permission:payment.view')
         ->name('api.v1.admin.refunds.index');
+
+    Route::get('refunds/{id}', [RefundController::class, 'show'])
+        ->middleware('permission:payment.view')
+        ->name('api.v1.admin.refunds.show');
 });

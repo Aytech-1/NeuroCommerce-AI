@@ -93,13 +93,13 @@ describe("Deals & Special Offers Suite", () => {
 
     // Deal 1
     expect(screen.getByText("Neural Signal Analyzer Pro")).toBeInTheDocument();
-    expect(screen.getByText("$899.00")).toBeInTheDocument();
-    expect(screen.getByText("$1,099.00")).toBeInTheDocument();
+    expect(screen.getByText("₦899.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,099.00")).toBeInTheDocument();
 
     // Deal 2
     expect(screen.getByText("Clinical Bio-Stimulator Unit")).toBeInTheDocument();
-    expect(screen.getByText("$599.00")).toBeInTheDocument();
-    expect(screen.getByText("$799.00")).toBeInTheDocument();
+    expect(screen.getByText("₦599.00")).toBeInTheDocument();
+    expect(screen.getByText("₦799.00")).toBeInTheDocument();
   });
 
   it("3. Loading State: displays skeletons during fetch", () => {

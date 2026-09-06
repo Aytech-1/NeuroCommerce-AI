@@ -11,59 +11,172 @@ import {
   Filter,
   ChevronRight,
   ExternalLink,
-  RotateCw,
   AlertCircle,
   FolderTree,
-  Tag,
-  Package,
+  Edit2,
+  Trash2,
+  CornerDownRight,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Can } from "@/components/ui/can";
-import { useCategories } from "@/hooks/use-catalog";
-import { catalogService } from "@/services/catalog-service";
-import { useQueryClient } from "@tanstack/react-query";
+import {
+  useCategories,
+  useCreateCategory,
+  useUpdateCategory,
+  useDeleteCategory,
+} from "@/hooks/use-catalog";
+import { CategoryItem } from "@/services/category-service";
 import { toast } from "sonner";
+import { ApiError } from "@/types/api";
 
 export default function AdminCategoriesPage() {
-  const queryClient = useQueryClient();
   const { data: categories, isLoading, isError, refetch } = useCategories();
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const createCategoryMutation = useCreateCategory();
+  const updateCategoryMutation = useUpdateCategory();
+  const deleteCategoryMutation = useDeleteCategory();
+
+  // Filter States
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [description, setDescription] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Create Modal State
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createName, setCreateName] = useState("");
+  const [createSlug, setCreateSlug] = useState("");
+  const [createParentId, setCreateParentId] = useState("");
+  const [createDescription, setCreateDescription] = useState("");
+  const [createSortOrder, setCreateSortOrder] = useState<number>(0);
+  const [createIsActive, setCreateIsActive] = useState<boolean>(true);
+  const [createErrorMessage, setCreateErrorMessage] = useState<string | null>(null);
+
+  // Edit Modal State
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editSlug, setEditSlug] = useState("");
+  const [editParentId, setEditParentId] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editSortOrder, setEditSortOrder] = useState<number>(0);
+  const [editIsActive, setEditIsActive] = useState<boolean>(true);
+  const [editErrorMessage, setEditErrorMessage] = useState<string | null>(null);
+
+  // Delete Confirmation State
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deletingCategory, setDeletingCategory] = useState<CategoryItem | null>(null);
+
+  const resetCreateForm = () => {
+    setCreateName("");
+    setCreateSlug("");
+    setCreateParentId("");
+    setCreateDescription("");
+    setCreateSortOrder(0);
+    setCreateIsActive(true);
+    setCreateErrorMessage(null);
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!createName.trim()) return;
 
-    setIsSubmitting(true);
+    setCreateErrorMessage(null);
     try {
-      await catalogService.createCategory({
-        name: name.trim(),
-        slug: slug.trim() || undefined,
-        description: description.trim() || undefined,
-        is_active: true,
+      await createCategoryMutation.mutateAsync({
+        name: createName.trim(),
+        slug: createSlug.trim() || undefined,
+        parent_id: createParentId.trim() || null,
+        description: createDescription.trim() || null,
+        sort_order: Number(createSortOrder) || 0,
+        is_active: createIsActive,
       });
-      toast.success("Category created successfully!");
-      queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success(`Category "${createName.trim()}" created successfully!`);
       setIsCreateOpen(false);
-      setName("");
-      setSlug("");
-      setDescription("");
-    } catch {
-      toast.error("Failed to create category.");
-    } finally {
-      setIsSubmitting(false);
+      resetCreateForm();
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      setCreateErrorMessage(error.message || "Failed to create category. Please check your inputs.");
+      toast.error(error.message || "Failed to create category.");
     }
   };
+
+  const openEditModal = (cat: CategoryItem) => {
+    setEditingCategory(cat);
+    setEditName(cat.name);
+    setEditSlug(cat.slug);
+    setEditParentId(cat.parent_id || "");
+    setEditDescription(cat.description || "");
+    setEditSortOrder(cat.sort_order ?? 0);
+    setEditIsActive(cat.is_active);
+    setEditErrorMessage(null);
+    setIsEditOpen(true);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCategory || !editName.trim()) return;
+
+    setEditErrorMessage(null);
+    try {
+      await updateCategoryMutation.mutateAsync({
+        id: editingCategory.id,
+        payload: {
+          name: editName.trim(),
+          slug: editSlug.trim() || undefined,
+          parent_id: editParentId.trim() || null,
+          description: editDescription.trim() || null,
+          sort_order: Number(editSortOrder) || 0,
+          is_active: editIsActive,
+        },
+      });
+      toast.success(`Category "${editName.trim()}" updated successfully!`);
+      setIsEditOpen(false);
+      setEditingCategory(null);
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      setEditErrorMessage(error.message || "Failed to update category.");
+      toast.error(error.message || "Failed to update category.");
+    }
+  };
+
+  const handleToggleStatus = async (cat: CategoryItem) => {
+    try {
+      await updateCategoryMutation.mutateAsync({
+        id: cat.id,
+        payload: { is_active: !cat.is_active },
+      });
+      toast.success(`Category "${cat.name}" is now ${!cat.is_active ? "active" : "disabled"}.`);
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      toast.error(error.message || "Failed to change category status.");
+    }
+  };
+
+  const openDeleteDialog = (cat: CategoryItem) => {
+    setDeletingCategory(cat);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deletingCategory) return;
+    try {
+      await deleteCategoryMutation.mutateAsync(deletingCategory.id);
+      toast.success(`Category "${deletingCategory.name}" removed successfully.`);
+      setIsDeleteOpen(false);
+      setDeletingCategory(null);
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      toast.error(error.message || "Failed to delete category.");
+    }
+  };
+
+  // Helper map for parent category names
+  const categoryMap = new Map((categories || []).map((c) => [c.id, c.name]));
 
   const filteredCategories = categories?.filter((cat) => {
     const matchesSearch =
@@ -109,13 +222,16 @@ export default function AdminCategoriesPage() {
               Categories
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Manage the structure and organization of the NeuroCommerce product catalog.
+              Manage hierarchical category trees, product grouping, and storefront browsing taxonomies.
             </p>
           </div>
 
           <Can permission="category.create">
             <Button
-              onClick={() => setIsCreateOpen(true)}
+              onClick={() => {
+                resetCreateForm();
+                setIsCreateOpen(true);
+              }}
               className="h-10 px-4 gap-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold shadow-xs"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
@@ -135,7 +251,7 @@ export default function AdminCategoriesPage() {
               Total Categories
             </span>
             <span className="text-xl font-extrabold text-slate-900 mt-1 block">
-              {totalCategories} Categories
+              {totalCategories}
             </span>
           </div>
           <div className="p-4 rounded-[16px] bg-white border border-slate-200/90 shadow-2xs">
@@ -151,7 +267,7 @@ export default function AdminCategoriesPage() {
               Assigned Products
             </span>
             <span className="text-xl font-extrabold text-slate-900 mt-1 block">
-              {totalProductsAssigned} Products
+              {totalProductsAssigned}
             </span>
           </div>
           <div className="p-4 rounded-[16px] bg-white border border-slate-200/90 shadow-2xs">
@@ -172,7 +288,7 @@ export default function AdminCategoriesPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1 max-w-md">
             <Input
-              placeholder="Search categories..."
+              placeholder="Search categories by name, slug, description..."
               prefixIcon={<Search className="h-4 w-4" aria-hidden="true" />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -189,6 +305,7 @@ export default function AdminCategoriesPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
+              aria-label="Filter by category status"
               className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/10 shadow-2xs"
             >
               <option value="">All Statuses</option>
@@ -240,68 +357,114 @@ export default function AdminCategoriesPage() {
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 font-extrabold uppercase tracking-wider text-[10px] bg-slate-50/50">
-                  <th className="py-3.5 px-6">Category Name</th>
+                  <th className="py-3.5 px-6">Category Name & Hierarchy</th>
                   <th className="py-3.5 px-4">Slug</th>
                   <th className="py-3.5 px-4">Description</th>
-                  <th className="py-3.5 px-4">Products</th>
+                  <th className="py-3.5 px-4 text-center">Products</th>
                   <th className="py-3.5 px-4">Status</th>
                   <th className="py-3.5 px-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredCategories.map((cat) => (
-                  <tr key={cat.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100/80 shadow-2xs">
-                          <Layers className="h-5 w-5" aria-hidden="true" />
+                {filteredCategories.map((cat) => {
+                  const parentName = cat.parent_id ? categoryMap.get(cat.parent_id) : null;
+                  return (
+                    <tr key={cat.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3.5 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100/80 shadow-2xs">
+                            <Layers className="h-5 w-5" aria-hidden="true" />
+                          </div>
+                          <div>
+                            <span className="font-extrabold text-xs text-slate-900 block">
+                              {cat.name}
+                            </span>
+                            {parentName && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 mt-0.5">
+                                <CornerDownRight className="h-3 w-3 text-slate-400" />
+                                Subcategory of: <strong className="text-slate-600">{parentName}</strong>
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <span className="font-extrabold text-xs text-slate-900 block">
-                            {cat.name}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono font-bold text-xs text-slate-500">
+                        {cat.slug}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-slate-600 max-w-sm truncate">
+                        {cat.description || "—"}
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">
+                          {cat.products_count ?? 0}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        {cat.is_active ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+                            <span>Active</span>
                           </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                            <XCircle className="h-3 w-3" aria-hidden="true" />
+                            <span>Disabled</span>
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-6 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            href={`/category/${cat.slug}`}
+                            target="_blank"
+                            className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition-colors"
+                            title="View on Storefront"
+                            aria-label={`View ${cat.name} on Storefront`}
+                          >
+                            <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                          </Link>
+
+                          <Can permission="category.update">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleStatus(cat)}
+                              className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                              title={cat.is_active ? "Disable Category" : "Activate Category"}
+                              aria-label={`Toggle status for ${cat.name}`}
+                            >
+                              {cat.is_active ? (
+                                <EyeOff className="h-4 w-4" aria-hidden="true" />
+                              ) : (
+                                <Eye className="h-4 w-4" aria-hidden="true" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openEditModal(cat)}
+                              className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition-colors"
+                              title="Edit Category"
+                              aria-label={`Edit ${cat.name}`}
+                            >
+                              <Edit2 className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                          </Can>
+
+                          <Can permission="category.delete">
+                            <button
+                              type="button"
+                              onClick={() => openDeleteDialog(cat)}
+                              className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                              title="Delete Category"
+                              aria-label={`Delete ${cat.name}`}
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                          </Can>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono font-bold text-xs text-slate-500">
-                      {cat.slug}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-slate-600 max-w-sm truncate">
-                      {cat.description || "—"}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">
-                        {cat.products_count ?? 0}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      {cat.is_active ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
-                          <span>Active</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                          <XCircle className="h-3 w-3" aria-hidden="true" />
-                          <span>Disabled</span>
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-6 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link
-                          href={`/category/${cat.slug}`}
-                          target="_blank"
-                          className="h-8 w-8 inline-flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition-colors"
-                          title="View on Storefront"
-                          aria-label="View on Storefront"
-                        >
-                          <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -316,7 +479,10 @@ export default function AdminCategoriesPage() {
               : "Create product categories to structure your catalog hierarchy."
           }
           actionLabel="Create Category"
-          onAction={() => setIsCreateOpen(true)}
+          onAction={() => {
+            resetCreateForm();
+            setIsCreateOpen(true);
+          }}
         />
       )}
 
@@ -338,36 +504,93 @@ export default function AdminCategoriesPage() {
               </DialogDescription>
             </DialogHeader>
 
+            {createErrorMessage && (
+              <div
+                role="alert"
+                className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{createErrorMessage}</span>
+              </div>
+            )}
+
             <div className="space-y-4 py-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Category Name *</label>
+                <label htmlFor="create-cat-name" className="text-xs font-bold text-slate-700">Category Name *</label>
                 <Input
-                  placeholder="e.g. Audio & Sound"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  id="create-cat-name"
+                  placeholder="e.g. EEG & Neural Interfaces"
+                  value={createName}
+                  onChange={(e) => setCreateName(e.target.value)}
                   className="h-11 rounded-xl bg-slate-50 text-xs"
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">URL Slug</label>
+                <label htmlFor="create-cat-slug" className="text-xs font-bold text-slate-700">URL Slug</label>
                 <Input
-                  placeholder="e.g. audio-sound (auto-generated if empty)"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
+                  id="create-cat-slug"
+                  placeholder="e.g. eeg-neural-interfaces (auto-generated if empty)"
+                  value={createSlug}
+                  onChange={(e) => setCreateSlug(e.target.value)}
                   className="h-11 rounded-xl bg-slate-50 text-xs font-mono"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Description</label>
+                <label htmlFor="create-cat-parent" className="text-xs font-bold text-slate-700">Parent Category (Optional)</label>
+                <select
+                  id="create-cat-parent"
+                  value={createParentId}
+                  onChange={(e) => setCreateParentId(e.target.value)}
+                  className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600"
+                >
+                  <option value="">None (Top-Level Category)</option>
+                  {categories?.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="create-cat-desc" className="text-xs font-bold text-slate-700">Description</label>
                 <Input
+                  id="create-cat-desc"
                   placeholder="Brief category description..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={createDescription}
+                  onChange={(e) => setCreateDescription(e.target.value)}
                   className="h-11 rounded-xl bg-slate-50 text-xs"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="create-cat-sort" className="text-xs font-bold text-slate-700">Sort Order</label>
+                  <Input
+                    id="create-cat-sort"
+                    type="number"
+                    min="0"
+                    value={createSortOrder}
+                    onChange={(e) => setCreateSortOrder(parseInt(e.target.value, 10) || 0)}
+                    className="h-11 rounded-xl bg-slate-50 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="create-cat-status" className="text-xs font-bold text-slate-700">Status</label>
+                  <select
+                    id="create-cat-status"
+                    value={createIsActive ? "true" : "false"}
+                    onChange={(e) => setCreateIsActive(e.target.value === "true")}
+                    className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600"
+                  >
+                    <option value="true">Active</option>
+                    <option value="false">Disabled</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -382,7 +605,7 @@ export default function AdminCategoriesPage() {
               </Button>
               <Button
                 type="submit"
-                isLoading={isSubmitting}
+                isLoading={createCategoryMutation.isPending}
                 className="h-10 px-5 text-xs font-bold bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs"
               >
                 Create Category
@@ -391,6 +614,162 @@ export default function AdminCategoriesPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* ======================================================================= */}
+      {/* 6. EDIT MODAL DIALOG                                                    */}
+      {/* ======================================================================= */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="rounded-[20px] bg-white border border-slate-200/90 shadow-xl max-w-lg">
+          <form onSubmit={handleUpdate}>
+            <DialogHeader className="border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Edit2 className="h-5 w-5 text-blue-600" aria-hidden="true" />
+                <DialogTitle className="text-base font-extrabold text-slate-900">
+                  Edit Category
+                </DialogTitle>
+              </div>
+              <DialogDescription className="text-xs text-slate-500 mt-1">
+                Update category metadata, taxonomy hierarchy, and status.
+              </DialogDescription>
+            </DialogHeader>
+
+            {editErrorMessage && (
+              <div
+                role="alert"
+                className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{editErrorMessage}</span>
+              </div>
+            )}
+
+            <div className="space-y-4 py-5">
+              <div className="space-y-1.5">
+                <label htmlFor="edit-cat-name" className="text-xs font-bold text-slate-700">Category Name *</label>
+                <Input
+                  id="edit-cat-name"
+                  placeholder="e.g. Neural Interfaces"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="h-11 rounded-xl bg-slate-50 text-xs"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="edit-cat-slug" className="text-xs font-bold text-slate-700">URL Slug</label>
+                <Input
+                  id="edit-cat-slug"
+                  placeholder="e.g. neural-interfaces"
+                  value={editSlug}
+                  onChange={(e) => setEditSlug(e.target.value)}
+                  className="h-11 rounded-xl bg-slate-50 text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="edit-cat-parent" className="text-xs font-bold text-slate-700">Parent Category</label>
+                <select
+                  id="edit-cat-parent"
+                  value={editParentId}
+                  onChange={(e) => setEditParentId(e.target.value)}
+                  className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600"
+                >
+                  <option value="">None (Top-Level Category)</option>
+                  {categories
+                    ?.filter((c) => c.id !== editingCategory?.id)
+                    .map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="edit-cat-desc" className="text-xs font-bold text-slate-700">Description</label>
+                <Input
+                  id="edit-cat-desc"
+                  placeholder="Brief category description..."
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="h-11 rounded-xl bg-slate-50 text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="edit-cat-sort" className="text-xs font-bold text-slate-700">Sort Order</label>
+                  <Input
+                    id="edit-cat-sort"
+                    type="number"
+                    min="0"
+                    value={editSortOrder}
+                    onChange={(e) => setEditSortOrder(parseInt(e.target.value, 10) || 0)}
+                    className="h-11 rounded-xl bg-slate-50 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="edit-cat-status" className="text-xs font-bold text-slate-700">Status</label>
+                  <select
+                    id="edit-cat-status"
+                    value={editIsActive ? "true" : "false"}
+                    onChange={(e) => setEditIsActive(e.target.value === "true")}
+                    className="flex h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600"
+                  >
+                    <option value="true">Active</option>
+                    <option value="false">Disabled</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="border-t border-slate-100 pt-4 flex items-center justify-end gap-2.5">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsEditOpen(false);
+                  setEditingCategory(null);
+                }}
+                className="h-10 px-4 text-xs font-bold rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                isLoading={updateCategoryMutation.isPending}
+                className="h-10 px-5 text-xs font-bold bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs"
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ======================================================================= */}
+      {/* 7. DELETE CONFIRMATION DIALOG                                           */}
+      {/* ======================================================================= */}
+      <ConfirmDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title={`Delete Category "${deletingCategory?.name}"?`}
+        description={
+          deletingCategory?.products_count && deletingCategory.products_count > 0
+            ? `Warning: This category currently has ${deletingCategory.products_count} assigned product(s). Deleting will detach products from this category.`
+            : "Are you sure you want to delete this category? This action can be reversed via database restoration."
+        }
+        confirmText="Delete Category"
+        variant="danger"
+        isLoading={deleteCategoryMutation.isPending}
+        onConfirm={handleDelete}
+        onCancel={() => {
+          setIsDeleteOpen(false);
+          setDeletingCategory(null);
+        }}
+      />
     </div>
   );
 }

@@ -87,11 +87,21 @@ export const storefrontService = {
     query: string,
     params: PublicProductQueryParams = {}
   ): Promise<{ data: ProductItem[]; meta?: PaginationMeta }> {
+    const queryParams: Record<string, unknown> = {
+      q: query,
+      page: params.page,
+      per_page: params.per_page,
+    };
+
+    if (params.category) queryParams.category = params.category;
+    if (params.brand) queryParams.brand = params.brand;
+    if (params.price_min !== undefined) queryParams.min_price = params.price_min;
+    if (params.price_max !== undefined) queryParams.max_price = params.price_max;
+    if (params.in_stock !== undefined) queryParams.in_stock = params.in_stock;
+    if (params.sort) queryParams.sort = params.sort;
+
     const response = await apiClient.get<ApiResponse<ProductItem[]>>("/search", {
-      params: {
-        q: query,
-        ...params,
-      },
+      params: queryParams,
     });
     return {
       data: response.data.data,
@@ -173,11 +183,50 @@ export const storefrontService = {
     return response.data.data;
   },
 
+  async getPersonalizedRecommendations(limit = 8): Promise<ProductItem[]> {
+    const response = await apiClient.get<ApiResponse<ProductItem[]>>("/recommendations/personalized", {
+      params: { limit },
+    });
+    return response.data.data;
+  },
+
   async getSimilarRecommendations(productId: string, limit = 4): Promise<ProductItem[]> {
     const response = await apiClient.get<ApiResponse<ProductItem[]>>(`/recommendations/similar/${productId}`, {
       params: { limit },
     });
     return response.data.data;
+  },
+
+  async getCrossSellRecommendations(cartProductIds: string[] = [], limit = 5): Promise<ProductItem[]> {
+    const response = await apiClient.get<ApiResponse<ProductItem[]>>("/recommendations/cross-sell", {
+      params: { cart_products: cartProductIds, limit },
+    });
+    return response.data.data;
+  },
+
+  async getRecentlyViewedRecommendations(limit = 10): Promise<ProductItem[]> {
+    const response = await apiClient.get<ApiResponse<ProductItem[]>>("/recommendations/recently-viewed", {
+      params: { limit },
+    });
+    return response.data.data;
+  },
+
+  async submitProductReview(
+    productId: string,
+    payload: { rating: number; title?: string; body?: string; images?: string[] }
+  ): Promise<ReviewItem> {
+    const response = await apiClient.post<ApiResponse<ReviewItem>>(`/products/${productId}/reviews`, payload);
+    return response.data.data;
+  },
+
+  async trackProductView(productId: string): Promise<void> {
+    try {
+      await apiClient.post("/tracking/product-view", {
+        product_id: productId,
+      });
+    } catch {
+      // Non-blocking telemetry
+    }
   },
 
   async addToCart(productId: string, quantity = 1, variantId?: string): Promise<void> {

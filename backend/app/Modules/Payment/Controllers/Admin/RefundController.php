@@ -39,4 +39,13 @@ class RefundController extends Controller
 
         return ResponseHelper::paginated($paginator, RefundResource::class);
     }
+
+    public function show(string $id): JsonResponse
+    {
+        /** @var Refund $refund */
+        $refund = Refund::with(['payment', 'order.user', 'processor'])->findOrFail($id);
+        $this->authorize('view', $refund);
+
+        return ResponseHelper::success(new RefundResource($refund));
+    }
 }

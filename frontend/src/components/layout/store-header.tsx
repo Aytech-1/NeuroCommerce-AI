@@ -406,8 +406,10 @@ export function StoreHeader() {
 
                 {/* AI Recommendations with New Badge */}
                 <Link
-                  href="/products"
-                  className="flex items-center gap-1.5 hover:text-blue-600 transition-colors text-slate-800"
+                  href="/recommendations"
+                  className={`flex items-center gap-1.5 hover:text-blue-600 transition-colors ${
+                    pathname === "/recommendations" ? "text-blue-600 font-bold" : "text-slate-800"
+                  }`}
                 >
                   <Sparkles className="h-4 w-4 text-blue-600" />
                   <span>AI Recommendations</span>
@@ -462,6 +464,19 @@ export function StoreHeader() {
                 className="px-3 py-2 rounded-xl hover:bg-slate-50 flex items-center justify-between"
               >
                 <span>Hardware Catalog</span>
+              </Link>
+              <Link
+                href="/recommendations"
+                onClick={() => setMobileNavOpen(false)}
+                className="px-3 py-2 rounded-xl hover:bg-slate-50 flex items-center justify-between text-blue-600 font-semibold"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-blue-600" />
+                  AI Recommendations
+                </span>
+                <span className="px-1.5 py-0.5 text-[10px] font-extrabold uppercase rounded-full bg-blue-600 text-white">
+                  New
+                </span>
               </Link>
               <Link
                 href="/categories"

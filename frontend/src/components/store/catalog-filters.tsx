@@ -1,8 +1,9 @@
 "use client";
 
-import { Search, X, Check, DollarSign } from "lucide-react";
+import { Search, X, Check, Coins } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CategoryItem, BrandItem } from "@/services/catalog-service";
+import { getCurrencySymbol } from "@/lib/utils";
 
 interface CatalogFiltersProps {
   search: string;
@@ -127,38 +128,38 @@ export function CatalogFilters({
         </select>
       </div>
 
-      {/* Price Range ($) */}
+      {/* Price Range */}
       <div className="space-y-2.5 pt-2 border-t border-slate-100">
         <label className="block text-xs font-bold text-slate-800">
-          Price Range ($)
+          Price Range ({getCurrencySymbol()})
         </label>
         <div className="grid grid-cols-2 gap-2.5">
           <div className="relative">
             <Input
               type="number"
               placeholder="Min"
-              aria-label="Minimum price in dollars"
+              aria-label="Minimum price"
               value={minPrice !== undefined ? minPrice : ""}
               onChange={(e) =>
                 onMinPriceChange(e.target.value ? Number(e.target.value) : undefined)
               }
               className="h-10 text-xs rounded-xl bg-slate-50 border-slate-200 pl-7"
             />
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">$</span>
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">{getCurrencySymbol()}</span>
           </div>
 
           <div className="relative">
             <Input
               type="number"
               placeholder="Max"
-              aria-label="Maximum price in dollars"
+              aria-label="Maximum price"
               value={maxPrice !== undefined ? maxPrice : ""}
               onChange={(e) =>
                 onMaxPriceChange(e.target.value ? Number(e.target.value) : undefined)
               }
               className="h-10 text-xs rounded-xl bg-slate-50 border-slate-200 pl-7"
             />
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">$</span>
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">{getCurrencySymbol()}</span>
           </div>
         </div>
       </div>

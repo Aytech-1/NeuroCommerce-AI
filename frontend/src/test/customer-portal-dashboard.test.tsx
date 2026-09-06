@@ -131,7 +131,7 @@ describe("Customer Account Dashboard & Portal Shell Suite (STEP 26.6)", () => {
 
     expect(screen.getByText("Recent Laboratory Orders")).toBeInTheDocument();
     expect(screen.getByText("ORD-2026-0001")).toBeInTheDocument();
-    expect(screen.getAllByText("$549.99").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("₦549.99").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("link", { name: /view details/i })).toHaveAttribute("href", "/account/orders/ord-1");
   });
 

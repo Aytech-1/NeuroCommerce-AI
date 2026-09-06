@@ -175,7 +175,7 @@ describe("Admin Customer Management & Customer 360 Suite (STEP 27.6)", () => {
     expect(screen.getByText("+1 555 234 5678")).toBeInTheDocument();
     expect(screen.getByText("742 Evergreen Terrace")).toBeInTheDocument();
     expect(screen.getByText("Springfield, OR 97477")).toBeInTheDocument();
-    expect(screen.getByText("$1,250.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,250.00")).toBeInTheDocument();
     expect(screen.getByText("Account Security")).toBeInTheDocument();
     expect(screen.getByText("Email Verified")).toBeInTheDocument();
   });

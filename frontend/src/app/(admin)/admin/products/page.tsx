@@ -304,15 +304,22 @@ export default function AdminProductsPage() {
                     <td className="py-3.5 px-6">
                       <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 border border-slate-200/60 overflow-hidden">
-                          {product.primary_image?.url ? (
-                            <img
-                              src={product.primary_image.url}
-                              alt={product.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <Package className="h-5 w-5 text-slate-400" aria-hidden="true" />
-                          )}
+                          {(() => {
+                            const imageUrl =
+                              product.primary_image?.url ||
+                              product.images?.find((img) => img.is_primary)?.url ||
+                              product.images?.[0]?.url;
+
+                            return imageUrl ? (
+                              <img
+                                src={imageUrl}
+                                alt={product.primary_image?.alt_text || product.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <Package className="h-5 w-5 text-slate-400" aria-hidden="true" />
+                            );
+                          })()}
                         </div>
                         <div className="min-w-0 max-w-xs">
                           <Link
@@ -334,7 +341,7 @@ export default function AdminProductsPage() {
                       {product.category?.name || "Uncategorized"}
                     </td>
                     <td className="py-3.5 px-4 font-extrabold text-xs text-slate-900">
-                      {formatCurrency(product.base_price)}
+                      {formatCurrency(product.base_price, product.currency_code)}
                     </td>
                     <td className="py-3.5 px-4">
                       {getStatusBadge(product.status)}

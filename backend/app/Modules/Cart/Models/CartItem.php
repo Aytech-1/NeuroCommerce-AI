@@ -81,7 +81,7 @@ class CartItem extends Model implements AuditableContract
      */
     public function calculateLineTotal(): Money
     {
-        $currency = $this->cart?->currency_code ?: 'USD';
+        $currency = $this->cart?->currency_code ?: (string) config('neurocommerce.currency.default', 'NGN');
         $unitMoney = Money::fromDecimal((float) $this->unit_price, $currency);
 
         return Money::fromCents($unitMoney->getAmount() * $this->quantity, $currency);

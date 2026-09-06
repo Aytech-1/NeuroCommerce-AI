@@ -182,12 +182,12 @@ describe("Admin Coupons, Promotions & Discount Management Suite (STEP 27.7)", ()
     expect(screen.getByText("COUPON INSPECTION")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "SUMMER2026", level: 1 })).toBeInTheDocument();
     expect(screen.getByText("15% OFF")).toBeInTheDocument();
-    expect(screen.getByText("$100.00")).toBeInTheDocument();
-    expect(screen.getByText("$50.00")).toBeInTheDocument();
+    expect(screen.getByText("₦100.00")).toBeInTheDocument();
+    expect(screen.getByText("₦50.00")).toBeInTheDocument();
     expect(screen.getByText("Customer Redemptions (42)")).toBeInTheDocument();
     expect(screen.getByText("Sarah Connor")).toBeInTheDocument();
     expect(screen.getByText("ORD-2026-9901")).toBeInTheDocument();
-    expect(screen.getByText("-$15.00")).toBeInTheDocument();
+    expect(screen.getByText("-₦15.00")).toBeInTheDocument();
   });
 
   it("7. Edit Coupon Form: renders preloaded values and handles update submission", async () => {

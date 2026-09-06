@@ -33,6 +33,7 @@ vi.mock("@/hooks/use-users", () => ({
   useUser: vi.fn(),
   useUpdateUserStatus: vi.fn(),
   useRoles: vi.fn(),
+  useAssignUserRoles: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 const mockStaffMember = {

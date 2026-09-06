@@ -17,7 +17,7 @@ Route::prefix('api/v1')->middleware(['api'])->group(function () {
     Route::prefix('cart')->group(function () {
         Route::get('/', [CartController::class, 'show'])->name('api.v1.cart.show');
         Route::post('/items', [CartController::class, 'addItem'])->name('api.v1.cart.items.add');
-        Route::put('/items/{id}', [CartController::class, 'updateItem'])->name('api.v1.cart.items.update');
+        Route::match(['put', 'patch'], '/items/{id}', [CartController::class, 'updateItem'])->name('api.v1.cart.items.update');
         Route::delete('/items/{id}', [CartController::class, 'removeItem'])->name('api.v1.cart.items.remove');
         Route::delete('/', [CartController::class, 'clear'])->name('api.v1.cart.clear');
         Route::post('/coupon', [CartController::class, 'applyCoupon'])->name('api.v1.cart.coupon.apply');

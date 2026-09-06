@@ -6,8 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, ChevronRight, Package, Tag, DollarSign, Eye } from "lucide-react";
+import { ArrowLeft, Save, ChevronRight, Package, Tag, Coins, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { getCurrencySymbol } from "@/lib/utils";
 
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,9 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
+import { ProductImageManager } from "@/components/admin/product-image-manager";
+import { ProductVariantManager } from "@/components/admin/product-variant-manager";
+import { ProductInventoryManager } from "@/components/admin/product-inventory-manager";
 import { catalogService } from "@/services/catalog-service";
 import { useProduct, useCategories, useBrands } from "@/hooks/use-catalog";
 import { ApiError } from "@/types/api";
@@ -317,7 +321,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             <div className="p-6 sm:p-7 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-6">
               <div className="border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                  <Coins className="h-4 w-4 text-blue-600" aria-hidden="true" />
                   <h2 className="text-base font-extrabold text-slate-900">Pricing</h2>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">Base currency pricing and compare-at value.</p>
@@ -329,7 +333,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                   name="base_price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-bold text-slate-700">Base Price ($) *</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate-700">Base Price ({getCurrencySymbol(product?.currency_code)}) *</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" min="0" className="h-11 rounded-xl bg-slate-50 text-xs" {...field} />
                       </FormControl>
@@ -343,7 +347,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                   name="compare_at_price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-bold text-slate-700">Compare-At Price ($)</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate-700">Compare-At Price ({getCurrencySymbol(product?.currency_code)})</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" min="0" className="h-11 rounded-xl bg-slate-50 text-xs" {...field} />
                       </FormControl>
@@ -355,7 +359,32 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
 
-          {/* Section 3: Status & Visibility */}
+          {/* Section 3: Media & Gallery */}
+          <ProductImageManager
+            productId={id}
+            existingImages={product?.images || []}
+            disabled={form.formState.isSubmitting}
+          />
+
+          {/* Section 4: Product Variants */}
+          <ProductVariantManager
+            productId={id}
+            basePrice={product?.base_price}
+            currencyCode={product?.currency_code}
+            existingVariants={product?.variants || []}
+            disabled={form.formState.isSubmitting}
+          />
+
+          {/* Section 5: Inventory & Warehouses */}
+          <ProductInventoryManager
+            productId={id}
+            productName={product?.name}
+            productSku={product?.sku}
+            variants={product?.variants || []}
+            disabled={form.formState.isSubmitting}
+          />
+
+          {/* Section 6: Status & Visibility */}
           <div className="p-6 sm:p-7 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-6">
             <div className="border-b border-slate-100 pb-4">
               <div className="flex items-center gap-2">

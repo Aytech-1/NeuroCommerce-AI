@@ -239,7 +239,7 @@ export default function CheckoutSuccessPage() {
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Tax</span>
-                <span>{order?.tax_amount ? formatCurrency(order.tax_amount) : "$0.00"}</span>
+                <span>{order?.tax_amount ? formatCurrency(order.tax_amount) : formatCurrency(0)}</span>
               </div>
               <div className="flex justify-between text-sm sm:text-base font-extrabold text-slate-900 pt-2 border-t border-slate-100">
                 <span>Grand Total</span>

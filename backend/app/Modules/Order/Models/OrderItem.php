@@ -92,7 +92,7 @@ class OrderItem extends Model
 
     public function calculateLineTotal(): Money
     {
-        $currency = $this->order?->currency_code ?: 'USD';
+        $currency = $this->order?->currency_code ?: (string) config('neurocommerce.currency.default', 'NGN');
         return Money::fromDecimal((float) $this->line_total, $currency);
     }
 }

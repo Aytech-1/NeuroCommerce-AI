@@ -24,6 +24,12 @@ import {
   ExternalLink,
   LogOut,
   Sparkles,
+  CreditCard,
+  Truck,
+  RotateCcw,
+  Receipt,
+  DollarSign,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
@@ -59,6 +65,11 @@ const adminNavGroups: NavGroup[] = [
       { title: "Categories", href: "/admin/categories", icon: Layers, permission: "category.view" },
       { title: "Brands", href: "/admin/brands", icon: Tag, permission: "brand.view" },
       { title: "Orders", href: "/admin/orders", icon: ShoppingCart, permission: "order.view" },
+      { title: "Invoices", href: "/admin/invoices", icon: Receipt, permission: "order.view" },
+      { title: "Payments", href: "/admin/payments", icon: CreditCard, permission: "payment.view" },
+      { title: "Finance & Accounting", href: "/admin/finance", icon: DollarSign, permission: "report.view" },
+      { title: "Shipments", href: "/admin/shipments", icon: Truck, permission: "shipping.view" },
+      { title: "Returns & Refunds", href: "/admin/returns", icon: RotateCcw, permission: "payment.view" },
       { title: "Customers", href: "/admin/customers", icon: Users, permission: "customer.view" },
     ],
   },
@@ -81,6 +92,7 @@ const adminNavGroups: NavGroup[] = [
     items: [
       { title: "Staff", href: "/admin/staff", icon: Shield, permission: "staff.view" },
       { title: "Roles & RBAC", href: "/admin/roles", icon: ShieldCheck, permission: "role.view" },
+      { title: "Notifications", href: "/admin/notifications", icon: Bell, permission: "notification.view" },
       { title: "Audit Logs", href: "/admin/audit-logs", icon: ShieldAlert, permission: "audit.view" },
       { title: "Activity Logs", href: "/admin/activity-logs", icon: Activity, permission: "audit.view" },
     ],

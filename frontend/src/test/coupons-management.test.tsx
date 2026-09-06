@@ -121,7 +121,7 @@ describe("Admin Coupons Management Suite", () => {
 
     expect(screen.getByRole("heading", { name: "SUMMER2026" })).toBeInTheDocument();
     expect(screen.getByText("15% OFF")).toBeInTheDocument();
-    expect(screen.getByText("$100.00")).toBeInTheDocument();
-    expect(screen.getByText("$50.00")).toBeInTheDocument();
+    expect(screen.getByText("₦100.00")).toBeInTheDocument();
+    expect(screen.getByText("₦50.00")).toBeInTheDocument();
   });
 });

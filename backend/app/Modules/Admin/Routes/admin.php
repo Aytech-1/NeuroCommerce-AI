@@ -10,6 +10,7 @@ use App\Modules\Admin\Controllers\Admin\FeatureFlagController;
 use App\Modules\Admin\Controllers\Admin\ReportController;
 use App\Modules\Admin\Controllers\Admin\SettingController;
 use App\Modules\Admin\Controllers\Admin\SystemConfigController;
+use App\Modules\Admin\Controllers\Admin\SystemHealthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -45,6 +46,9 @@ Route::prefix('api/v1/admin')->middleware(['api', 'auth:sanctum'])->group(functi
         Route::get('/', [FeatureFlagController::class, 'index']);
         Route::patch('{name}', [FeatureFlagController::class, 'toggle']);
     });
+
+    // 4.4.1 System Health & Authoritative Diagnostics
+    Route::get('system-health', [SystemHealthController::class, 'index']);
 
     // 4.5 Audit & Activity Logs
     Route::prefix('audit-logs')->group(function () {

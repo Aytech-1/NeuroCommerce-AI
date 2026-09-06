@@ -67,20 +67,22 @@ class OrderDatabaseSeeder extends Seeder
             'phone' => '+15551234567',
         ]);
 
-        $orderNumber = 'NC-' . date('Ymd') . '-DEMO01';
+        // Look for existing demo order or generate today's order number
+        $existingOrder = Order::where('order_number', 'like', 'NC-%-DEMO01')->first();
+        $orderNumber = $existingOrder ? $existingOrder->order_number : ('NC-' . date('Ymd') . '-DEMO01');
         $subtotal = (float) $product->base_price * 2;
-        $total = $subtotal + 10.00;
+        $shippingAmount = 0.00;
+        $total = $subtotal + $shippingAmount;
 
-        $order = Order::firstOrCreate([
+        $order = Order::updateOrCreate([
             'order_number' => $orderNumber,
         ], [
-            'id' => (string) Str::uuid(),
             'user_id' => $user->id,
             'status' => OrderStatus::PAID,
-            'currency_code' => 'USD',
+            'currency_code' => 'NGN',
             'subtotal' => $subtotal,
             'tax_amount' => 0.00,
-            'shipping_amount' => 10.00,
+            'shipping_amount' => $shippingAmount,
             'discount_amount' => 0.00,
             'total_amount' => $total,
             'item_count' => 2,
@@ -93,11 +95,10 @@ class OrderDatabaseSeeder extends Seeder
             'paid_at' => now(),
         ]);
 
-        OrderItem::firstOrCreate([
+        OrderItem::updateOrCreate([
             'order_id' => $order->id,
             'product_id' => $product->id,
         ], [
-            'id' => (string) Str::uuid(),
             'product_name' => $product->name,
             'product_sku' => $product->sku,
             'quantity' => 2,
@@ -118,16 +119,15 @@ class OrderDatabaseSeeder extends Seeder
             'created_at' => now(),
         ]);
 
-        Invoice::firstOrCreate([
+        Invoice::updateOrCreate([
             'order_id' => $order->id,
         ], [
-            'id' => (string) Str::uuid(),
             'invoice_number' => 'INV-' . date('Y') . '-DEMO01',
             'status' => InvoiceStatus::PAID,
             'subtotal' => $subtotal,
             'tax_amount' => 0.00,
             'total_amount' => $total,
-            'currency_code' => 'USD',
+            'currency_code' => 'NGN',
             'issued_at' => now(),
             'paid_at' => now(),
         ]);

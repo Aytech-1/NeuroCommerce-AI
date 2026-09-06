@@ -151,7 +151,7 @@ describe("Customer Portal Dashboard & Orders Suite", () => {
 
     expect(screen.getByText("Order History")).toBeInTheDocument();
     expect(screen.getByText("ORD-2026-0001")).toBeInTheDocument();
-    expect(screen.getByText("$549.99")).toBeInTheDocument();
+    expect(screen.getByText("₦549.99")).toBeInTheDocument();
   });
 
   it("renders customer order detail inspection page with line items", async () => {

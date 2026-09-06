@@ -9,7 +9,8 @@ export interface CartItem {
   variant_id?: string | null;
   quantity: number;
   unit_price: number;
-  subtotal: number;
+  line_total?: string | number;
+  subtotal?: number;
   product: ProductItem;
   variant?: ProductVariant | null;
   created_at: string;

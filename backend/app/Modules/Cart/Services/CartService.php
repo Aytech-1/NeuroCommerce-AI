@@ -42,8 +42,10 @@ class CartService extends AbstractService
     /**
      * Resolve or initialize active cart for a user or session.
      */
-    public function getOrCreateCart(?string $userId, ?string $sessionId, string $currency = 'USD'): Cart
+    public function getOrCreateCart(?string $userId, ?string $sessionId, ?string $currency = null): Cart
     {
+        $currency = $currency ?? (string) config('neurocommerce.currency.default', 'NGN');
+
         if ($userId !== null) {
             return $this->cartRepository->getOrCreateForUser($userId, $currency);
         }
@@ -197,12 +199,14 @@ class CartService extends AbstractService
         $subtotal = $cart->calculateSubtotal()->getFormattedAmount();
         $items = $cart->items;
 
+        $defaultCurrency = (string) config('neurocommerce.currency.default', 'NGN');
+
         $validation = $couponService->validateCoupon(
             code: $dto->code,
             subtotal: $subtotal,
             cartItems: $items,
             userId: $userId,
-            currency: $cart->currency_code ?: 'USD'
+            currency: $cart->currency_code ?: $defaultCurrency
         );
 
         if (!$validation->isValid) {
@@ -236,10 +240,11 @@ class CartService extends AbstractService
      */
     public function calculateSummary(Cart $cart): CartSummaryDTO
     {
+        $defaultCurrency = (string) config('neurocommerce.currency.default', 'NGN');
         $cart->load('items.product');
         $subtotalMoney = $cart->calculateSubtotal();
         $subtotal = $subtotalMoney->getFormattedAmount();
-        $currency = $cart->currency_code ?: 'USD';
+        $currency = $cart->currency_code ?: $defaultCurrency;
 
         $discount = 0.0;
         $couponCode = null;

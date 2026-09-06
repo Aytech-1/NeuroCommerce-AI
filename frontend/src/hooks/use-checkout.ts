@@ -66,10 +66,11 @@ export function useProcessCheckout() {
       // 4. Navigate to success confirmation page
       router.push(`/checkout/success?order_id=${data.order.id}&order_number=${data.order.order_number}`);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
       const message =
-        error?.response?.data?.message ||
-        error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
         "Payment processing or checkout placement failed. Please verify your details.";
       toast.error(message);
     },

@@ -106,7 +106,7 @@ describe("Cart Drawer & Full Shopping Bag Suite (STEP 26.3)", () => {
     expect(screen.getByRole("heading", { level: 1, name: /shopping bag/i })).toBeInTheDocument();
     expect(screen.getByText("SHOPPING BAG")).toBeInTheDocument();
     expect(screen.getByText("Neural Interface V2 Pro")).toBeInTheDocument();
-    expect(screen.getAllByText("$1,099.98").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("₦1,099.98").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("button", { name: /proceed to checkout/i })).toBeInTheDocument();
   });
 

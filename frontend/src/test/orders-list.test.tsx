@@ -49,7 +49,7 @@ describe("Admin Orders List Page", () => {
     expect(screen.getByText("Sarah Connor")).toBeInTheDocument();
     expect(screen.getByText("sarah@example.com")).toBeInTheDocument();
     expect(screen.getByText("2 items")).toBeInTheDocument();
-    expect(screen.getByText("$549.99")).toBeInTheDocument();
+    expect(screen.getByText("₦549.99")).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: /processing/i })).toBeInTheDocument();
   });
 

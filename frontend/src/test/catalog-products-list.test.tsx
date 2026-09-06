@@ -63,7 +63,7 @@ describe("Admin Catalog Products Page", () => {
 
     expect(screen.getByText("Neural Headset Alpha")).toBeInTheDocument();
     expect(screen.getByText("NHA-001")).toBeInTheDocument();
-    expect(screen.getByText("$299.99")).toBeInTheDocument();
+    expect(screen.getByText("₦299.99")).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "Audio" })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: /active/i })).toBeInTheDocument();
   });

@@ -36,10 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (isMounted) {
           setUser(user);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Only clear session on 401 unauthenticated
         if (isMounted) {
-          if (err?.status === 401) {
+          const errorObj = err as { status?: number };
+          if (errorObj?.status === 401) {
             setSessionExpired(true);
           } else {
             // Keep token in case of transient network error, but stop loading

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Star,
@@ -14,15 +14,21 @@ import {
   XCircle,
   Sparkles,
   ChevronRight,
+  ChevronLeft,
   Maximize2,
   X,
-  Headphones,
   Cpu,
   Layers,
+  Share2,
+  MessageSquarePlus,
+  Send,
+  Check,
+  Package,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ProductCard } from "@/components/store/product-card";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
@@ -31,24 +37,43 @@ import {
   useSimilarRecommendations,
   useAddToCart,
   useToggleWishlist,
+  useSubmitReview,
 } from "@/hooks/use-storefront";
+import { storefrontService } from "@/services/storefront-service";
 import { ProductVariant } from "@/services/catalog-service";
+import { toast } from "sonner";
 
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
 
   const { data: product, isLoading, isError, refetch } = useProductBySlug(slug);
-  const { data: reviewsData } = useProductReviews(product?.id || "");
+
+  const [reviewPage, setReviewPage] = useState(1);
+  const { data: reviewsData } = useProductReviews(product?.id || "", { page: reviewPage, per_page: 5 });
   const { data: similarProducts } = useSimilarRecommendations(product?.id || "", 4);
 
   const addToCartMutation = useAddToCart();
   const wishlistMutation = useToggleWishlist();
+  const submitReviewMutation = useSubmitReview(product?.id || "");
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // Review Form Modal State
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [newRating, setNewRating] = useState(5);
+  const [newTitle, setNewTitle] = useState("");
+  const [newBody, setNewBody] = useState("");
+
+  // Telemetry: Behavior Tracking
+  useEffect(() => {
+    if (product?.id) {
+      storefrontService.trackProductView(product.id);
+    }
+  }, [product?.id]);
 
   if (isLoading) {
     return (
@@ -87,7 +112,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Product Not Found</h1>
           <p className="text-sm text-slate-500">
-            The requested hardware model could not be located or may have been updated.
+            The requested hardware model could not be located or may have been retired from the active catalog.
           </p>
           <div className="flex items-center justify-center gap-3 pt-2">
             <Link
@@ -108,6 +133,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     );
   }
 
+  // Authoritative Images list
   const images =
     product.images && product.images.length > 0
       ? product.images
@@ -123,18 +149,36 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         ]
       : [];
 
-  const activePrice = selectedVariant?.price ?? product.sale_price ?? product.base_price;
+  const activePrice = Number(selectedVariant?.price ?? product.sale_price ?? product.base_price);
   const comparePrice =
     selectedVariant?.compare_at_price ??
     product.compare_at_price ??
-    (product.sale_price ? product.base_price : null);
+    (product.sale_price ? Number(product.base_price) : null);
   const isOnSale = Boolean(comparePrice && comparePrice > activePrice);
   const isOutOfStock =
     product.stock_status === "out_of_stock" ||
     (product.stock_quantity !== undefined && product.stock_quantity <= 0);
   const inStock = !isOutOfStock;
 
-  const currentImage = images[selectedImageIndex] || images[0];
+  // Selected or Variant Image Switch
+  const currentImageUrl =
+    selectedVariant?.image_url || images[selectedImageIndex]?.url || product.primary_image?.url || "";
+  const currentAltText =
+    images[selectedImageIndex]?.alt_text || product.name || "NeuroCommerce hardware specification";
+
+  const handleVariantSelect = (variant: ProductVariant) => {
+    if (selectedVariant?.id === variant.id) {
+      setSelectedVariant(null);
+    } else {
+      setSelectedVariant(variant);
+      if (variant.image_url) {
+        const matchingIdx = images.findIndex((img) => img.url === variant.image_url);
+        if (matchingIdx >= 0) {
+          setSelectedImageIndex(matchingIdx);
+        }
+      }
+    }
+  };
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
@@ -153,13 +197,91 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     setIsWishlisted(!isWishlisted);
   };
 
+  const handleShare = async () => {
+    if (typeof window !== "undefined") {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: product.name,
+            text: product.short_description || product.name,
+            url: window.location.href,
+          });
+          return;
+        } catch {
+          // User cancelled share
+        }
+      }
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Product link copied to clipboard!");
+      } catch {
+        toast.error("Unable to copy link.");
+      }
+    }
+  };
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitReviewMutation.mutate(
+      {
+        rating: newRating,
+        title: newTitle.trim() || undefined,
+        body: newBody.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          setIsReviewModalOpen(false);
+          setNewRating(5);
+          setNewTitle("");
+          setNewBody("");
+        },
+      }
+    );
+  };
+
+  // Structured Data (JSON-LD)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.short_description || product.description || product.name,
+    sku: selectedVariant?.sku || product.sku,
+    image: images.map((img) => img.url),
+    brand: product.brand ? { "@type": "Brand", name: product.brand.name } : { "@type": "Brand", name: "NeuroCommerce" },
+    offers: {
+      "@type": "Offer",
+      price: activePrice,
+      priceCurrency: product.currency_code || process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || "NGN",
+      availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    },
+    ...(Number(product.review_count) > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: parseFloat(String(product.avg_rating || 5)),
+            reviewCount: Number(product.review_count),
+          },
+        }
+      : {}),
+  };
+
+  const totalReviews = reviewsData?.meta?.total ?? Number(product.review_count || 0);
+  const avgRatingFormatted = Number(product.avg_rating || 5).toFixed(1);
+  const lastReviewPage = reviewsData?.meta?.last_page ?? 1;
+
   return (
     <div className="bg-white min-h-screen py-8 lg:py-12">
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <Container className="space-y-12 lg:space-y-16">
         {/* ======================================================================= */}
         {/* 1. BREADCRUMB NAVIGATION                                                */}
         {/* ======================================================================= */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-medium text-slate-500">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-slate-500">
           <Link href="/" className="hover:text-blue-600 transition-colors">
             Home
           </Link>
@@ -171,7 +293,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
             <>
               <ChevronRight className="h-3 w-3 text-slate-400" aria-hidden="true" />
               <Link
-                href="/products"
+                href={`/search?category=${encodeURIComponent(product.category.slug || product.category.id)}`}
                 className="hover:text-blue-600 transition-colors"
               >
                 {product.category.name}
@@ -194,10 +316,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           <div className="lg:col-span-7 space-y-4">
             {/* Primary Main Image Frame */}
             <div className="relative aspect-square w-full overflow-hidden rounded-[24px] bg-[#F8FAFC] border border-slate-200/90 p-8 flex items-center justify-center shadow-2xs group">
-              {currentImage?.url ? (
+              {currentImageUrl ? (
                 <img
-                  src={currentImage.url}
-                  alt={currentImage.alt_text || product.name}
+                  src={currentImageUrl}
+                  alt={currentAltText}
                   className="h-full w-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (
@@ -214,10 +336,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               )}
 
               {/* Lightbox Trigger Button */}
-              {currentImage?.url && (
+              {currentImageUrl && (
                 <button
                   onClick={() => setLightboxOpen(true)}
-                  className="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-xl bg-white/90 text-slate-700 shadow-md backdrop-blur-xs hover:bg-white hover:text-blue-600 transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-xl bg-white/90 text-slate-700 shadow-md backdrop-blur-xs hover:bg-white hover:text-blue-600 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
                   aria-label="Enlarge image"
                 >
                   <Maximize2 className="h-4 w-4" />
@@ -232,7 +354,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   <button
                     key={img.id || idx}
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 bg-[#F8FAFC] p-1 transition-all ${
+                    className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 bg-[#F8FAFC] p-1 transition-all cursor-pointer ${
                       selectedImageIndex === idx
                         ? "border-blue-600 ring-2 ring-blue-500/20 shadow-xs"
                         : "border-slate-200 opacity-70 hover:opacity-100"
@@ -254,21 +376,33 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           {/* RIGHT: PRODUCT INFO & COMMERCIAL PURCHASE PANEL (5 cols on desktop)   */}
           {/* --------------------------------------------------------------------- */}
           <div className="lg:col-span-5 space-y-6">
-            {/* Header: Brand & SKU */}
+            {/* Header: Brand, SKU & Share */}
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-4">
                 {product.brand ? (
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                  <Link
+                    href={`/search?brand=${encodeURIComponent(product.brand.slug || product.brand.id)}`}
+                    className="text-xs font-bold uppercase tracking-wider text-blue-600 hover:underline"
+                  >
                     {product.brand.name}
-                  </span>
+                  </Link>
                 ) : (
                   <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
                     NeuroCommerce
                   </span>
                 )}
-                <span className="font-mono text-xs text-slate-600 font-medium">
-                  SKU: {selectedVariant?.sku ?? product.sku}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs text-slate-500 font-medium">
+                    SKU: {selectedVariant?.sku ?? product.sku}
+                  </span>
+                  <button
+                    onClick={handleShare}
+                    className="text-slate-400 hover:text-slate-700 transition-colors p-1"
+                    aria-label="Share product specification"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
@@ -279,15 +413,23 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               <div className="flex items-center gap-2 pt-1">
                 <div className="flex items-center text-amber-400">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="h-4 w-4 fill-amber-400" aria-hidden="true" />
+                    <Star
+                      key={s}
+                      className={`h-4 w-4 ${
+                        s <= Math.round(Number(product.avg_rating || 5))
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-slate-200"
+                      }`}
+                      aria-hidden="true"
+                    />
                   ))}
                 </div>
-                <span className="text-xs font-bold text-slate-800">5.0</span>
+                <span className="text-xs font-bold text-slate-800">{avgRatingFormatted}</span>
                 <a
                   href="#customer-reviews"
                   className="text-xs text-slate-500 hover:text-blue-600 transition-colors font-medium"
                 >
-                  ({reviewsData?.meta?.total ?? reviewsData?.data?.length ?? 12} customer reviews)
+                  ({totalReviews} customer reviews)
                 </a>
               </div>
             </div>
@@ -295,15 +437,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
             {/* Price Presentation Block */}
             <div className="flex items-baseline gap-3 p-5 rounded-[20px] bg-[#F8FAFC] border border-slate-200/80">
               <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                {formatCurrency(activePrice)}
+                {formatCurrency(activePrice, product.currency_code)}
               </span>
               {isOnSale && comparePrice && (
                 <>
                   <span className="text-sm sm:text-base font-semibold text-slate-400 line-through">
-                    {formatCurrency(comparePrice)}
+                    {formatCurrency(Number(comparePrice), product.currency_code)}
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                    Save {Math.round(((comparePrice - activePrice) / comparePrice) * 100)}%
+                    Save {Math.round(((Number(comparePrice) - activePrice) / Number(comparePrice)) * 100)}%
                   </span>
                 </>
               )}
@@ -326,13 +468,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   {product.variants.map((v) => {
                     const isSelected = selectedVariant?.id === v.id;
                     const label =
-                      v.attribute_values?.map((a) => a.value).join(" / ") || v.sku;
+                      v.name ||
+                      v.attributes?.map((a) => a.value).join(" / ") ||
+                      v.attribute_values?.map((a) => a.value).join(" / ") ||
+                      v.sku;
                     return (
                       <button
                         key={v.id}
                         type="button"
-                        onClick={() => setSelectedVariant(isSelected ? null : v)}
-                        className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                        onClick={() => handleVariantSelect(v)}
+                        className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                           isSelected
                             ? "border-blue-600 bg-blue-50 text-blue-700 shadow-2xs"
                             : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
@@ -354,8 +499,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   <button
                     type="button"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={quantity <= 1}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-colors font-bold text-sm"
+                    disabled={quantity <= 1 || !inStock}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-colors font-bold text-sm cursor-pointer"
                     aria-label="Decrease quantity"
                   >
                     −
@@ -366,7 +511,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   <button
                     type="button"
                     onClick={() => setQuantity(quantity + 1)}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 transition-colors font-bold text-sm"
+                    disabled={!inStock}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-colors font-bold text-sm cursor-pointer"
                     aria-label="Increase quantity"
                   >
                     +
@@ -389,13 +535,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 </div>
               </div>
 
-              {/* Add to Cart & Wishlist Actions (48px+ min target) */}
+              {/* Add to Cart & Wishlist Actions */}
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="button"
                   onClick={handleAddToCart}
                   disabled={!inStock || addToCartMutation.isPending}
-                  className="flex-1 h-13 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-sm sm:text-base font-bold text-white shadow-md hover:bg-blue-700 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="flex-1 h-13 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-sm sm:text-base font-bold text-white shadow-md hover:bg-blue-700 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   <ShoppingBag className="h-5 w-5" aria-hidden="true" />
                   <span>{addToCartMutation.isPending ? "Adding to Cart..." : "Add to Cart"}</span>
@@ -405,7 +551,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   type="button"
                   onClick={handleWishlistToggle}
                   aria-label="Wishlist"
-                  className="h-13 w-13 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-2xs shrink-0"
+                  className="h-13 w-13 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-2xs shrink-0 cursor-pointer"
                 >
                   <Heart
                     className={`h-5 w-5 ${
@@ -441,37 +587,45 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         {/* ======================================================================= */}
         {/* 3. TECHNICAL SPECIFICATIONS & OVERVIEW                                   */}
         {/* ======================================================================= */}
-        {product.description && (
-          <div className="pt-12 border-t border-slate-200">
-            <div className="rounded-[24px] border border-slate-200/90 bg-white p-8 sm:p-10 shadow-xs space-y-6">
-              <div className="flex items-center gap-2 text-blue-600">
-                <Layers className="h-5 w-5" aria-hidden="true" />
-                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                  Technical Specifications &amp; Overview
-                </h2>
-              </div>
+        <div className="pt-12 border-t border-slate-200">
+          <div className="rounded-[24px] border border-slate-200/90 bg-white p-8 sm:p-10 shadow-xs space-y-6">
+            <div className="flex items-center gap-2 text-blue-600">
+              <Layers className="h-5 w-5" aria-hidden="true" />
+              <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                Technical Specifications &amp; Overview
+              </h2>
+            </div>
+            {product.description && (
               <div className="prose prose-slate max-w-none text-sm text-slate-600 leading-relaxed">
                 <p className="whitespace-pre-line">{product.description}</p>
               </div>
+            )}
 
-              {/* Structured Key Specs Table */}
-              <div className="pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-                <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100">
-                  <span className="font-semibold text-slate-500 block">Product SKU</span>
-                  <span className="font-mono font-bold text-slate-900 text-sm mt-0.5 block">{product.sku}</span>
-                </div>
-                <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100">
-                  <span className="font-semibold text-slate-500 block">Category</span>
-                  <span className="font-bold text-slate-900 text-sm mt-0.5 block">{product.category?.name || "Neural Hardware"}</span>
-                </div>
-                <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100">
-                  <span className="font-semibold text-slate-500 block">Manufacturer</span>
-                  <span className="font-bold text-slate-900 text-sm mt-0.5 block">{product.brand?.name || "NeuroCommerce Partner"}</span>
-                </div>
+            {/* Structured Key Specs Table */}
+            <div className="pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100">
+                <span className="font-semibold text-slate-500 block">Product SKU</span>
+                <span className="font-mono font-bold text-slate-900 text-sm mt-0.5 block">{product.sku}</span>
               </div>
+              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100">
+                <span className="font-semibold text-slate-500 block">Category</span>
+                <span className="font-bold text-slate-900 text-sm mt-0.5 block">{product.category?.name || "Neural Hardware"}</span>
+              </div>
+              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100">
+                <span className="font-semibold text-slate-500 block">Manufacturer</span>
+                <span className="font-bold text-slate-900 text-sm mt-0.5 block">{product.brand?.name || "NeuroCommerce Partner"}</span>
+              </div>
+              {product.weight && (
+                <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100">
+                  <span className="font-semibold text-slate-500 block">Unit Weight</span>
+                  <span className="font-bold text-slate-900 text-sm mt-0.5 block">
+                    {product.weight} {product.weight_unit || "kg"}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
         {/* ======================================================================= */}
         {/* 4. CUSTOMER REVIEWS & ENDORSEMENTS                                      */}
@@ -489,6 +643,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 Verified feedback from research labs and clinical neuroscientists
               </p>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsReviewModalOpen(true)}
+              className="border-slate-200 text-slate-800 hover:bg-slate-50 font-bold text-xs shrink-0"
+            >
+              <MessageSquarePlus className="h-4 w-4 mr-1.5 text-blue-600" />
+              Write a Review
+            </Button>
           </div>
 
           {reviewsData?.data && reviewsData.data.length > 0 ? (
@@ -539,6 +702,35 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   )}
                 </div>
               ))}
+
+              {/* Review Pagination */}
+              {lastReviewPage > 1 && (
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                  <span className="text-xs text-slate-500 font-medium">
+                    Review Page {reviewPage} of {lastReviewPage}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setReviewPage((p) => Math.max(1, p - 1))}
+                      disabled={reviewPage <= 1}
+                      className="text-xs"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5 mr-1" /> Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setReviewPage((p) => Math.min(lastReviewPage, p + 1))}
+                      disabled={reviewPage >= lastReviewPage}
+                      className="text-xs"
+                    >
+                      Next <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="p-10 text-center rounded-[20px] bg-[#F8FAFC] border border-slate-200 text-slate-500 text-sm">
@@ -570,9 +762,123 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
       </Container>
 
       {/* ========================================================================= */}
+      {/* WRITE A REVIEW MODAL                                                      */}
+      {/* ========================================================================= */}
+      {isReviewModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Write a customer review"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
+        >
+          <div className="absolute inset-0" onClick={() => setIsReviewModalOpen(false)} aria-hidden="true" />
+          <div className="relative z-10 max-w-lg w-full bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <h3 className="text-lg font-extrabold text-slate-900">Write a Review</h3>
+                <p className="text-xs text-slate-500">{product.name}</p>
+              </div>
+              <button
+                onClick={() => setIsReviewModalOpen(false)}
+                className="h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                aria-label="Close review form"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitReview} className="space-y-4">
+              {/* Rating selection */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">Overall Rating</label>
+                <div className="flex items-center gap-1.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setNewRating(star)}
+                      className="p-1 text-amber-400 hover:scale-110 transition-transform cursor-pointer"
+                      aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                    >
+                      <Star
+                        className={`h-6 w-6 ${
+                          star <= newRating ? "fill-amber-400 text-amber-400" : "text-slate-200"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  <span className="text-xs font-bold text-slate-700 ml-2">
+                    {newRating} / 5
+                  </span>
+                </div>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-1.5">
+                <label htmlFor="review-title" className="text-xs font-bold text-slate-700 block">
+                  Review Headline (Optional)
+                </label>
+                <Input
+                  id="review-title"
+                  placeholder="e.g. Exceptional telemetry precision"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="h-10 text-xs sm:text-sm"
+                  maxLength={200}
+                />
+              </div>
+
+              {/* Body */}
+              <div className="space-y-1.5">
+                <label htmlFor="review-body" className="text-xs font-bold text-slate-700 block">
+                  Review Comments
+                </label>
+                <textarea
+                  id="review-body"
+                  rows={4}
+                  placeholder="Share your technical evaluation and laboratory observations..."
+                  value={newBody}
+                  onChange={(e) => setNewBody(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 p-3 text-xs sm:text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:outline-none transition-all"
+                  maxLength={5000}
+                  required
+                />
+              </div>
+
+              <div className="rounded-xl bg-slate-50 border border-slate-100 p-3 text-[11px] text-slate-500 leading-relaxed">
+                Submitted reviews undergo verification by laboratory moderators prior to public indexing.
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsReviewModalOpen(false)}
+                  className="text-xs"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  disabled={submitReviewMutation.isPending || !newBody.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs"
+                >
+                  <Send className="h-3.5 w-3.5 mr-1.5" />
+                  {submitReviewMutation.isPending ? "Submitting..." : "Submit Review"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* LIGHTBOX DIALOG                                                           */}
       {/* ========================================================================= */}
-      {lightboxOpen && currentImage?.url && (
+      {lightboxOpen && currentImageUrl && (
         <div
           role="dialog"
           aria-modal="true"
@@ -583,14 +889,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           <div className="relative z-10 max-w-4xl max-h-[90vh] bg-white rounded-[24px] p-6 shadow-2xl overflow-hidden flex flex-col items-center">
             <button
               onClick={() => setLightboxOpen(false)}
-              className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+              className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
               aria-label="Close enlarged view"
             >
               <X className="h-5 w-5" />
             </button>
             <img
-              src={currentImage.url}
-              alt={currentImage.alt_text || product.name}
+              src={currentImageUrl}
+              alt={currentAltText}
               className="max-h-[80vh] w-auto object-contain rounded-xl"
             />
           </div>

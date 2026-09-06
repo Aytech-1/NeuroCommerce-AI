@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import CheckoutPage from "@/app/(store)/checkout/page";
 import { useCart } from "@/hooks/use-cart";
@@ -265,13 +265,13 @@ describe("STEP 28.4 — Storefront Checkout Experience & Order Submission Suite"
     expect(screen.getByText("Synaptic Telemetry Bio-Amplifier")).toBeInTheDocument();
 
     expect(screen.getByText("Hardware Subtotal")).toBeInTheDocument();
-    expect(screen.getByText("$1,899.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,899.00")).toBeInTheDocument();
 
     expect(screen.getByText("Discount (SUMMER100)")).toBeInTheDocument();
-    expect(screen.getByText("-$100.00")).toBeInTheDocument();
+    expect(screen.getByText("-₦100.00")).toBeInTheDocument();
 
     expect(screen.getByText("Estimated Tax")).toBeInTheDocument();
-    expect(screen.getByText("$89.95")).toBeInTheDocument();
+    expect(screen.getByText("₦89.95")).toBeInTheDocument();
   });
 
   it("5. Empty Bag Protection: renders empty state when cart has 0 items", () => {

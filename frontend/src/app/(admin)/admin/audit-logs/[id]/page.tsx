@@ -130,6 +130,9 @@ export default function AuditLogDetailPage({ params }: { params: Promise<{ id: s
             {log.user ? log.user.name : "System Daemon / CLI"}
           </p>
           {log.user?.email && <p className="text-xs text-slate-500">{log.user.email}</p>}
+          {log.user_type && (
+            <p className="text-[10px] font-mono text-slate-400 truncate">Type: {log.user_type}</p>
+          )}
         </div>
 
         <div className="p-5 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-2">
@@ -140,6 +143,11 @@ export default function AuditLogDetailPage({ params }: { params: Promise<{ id: s
           <p className="text-sm font-extrabold font-mono text-slate-900">
             {log.ip_address || "127.0.0.1"}
           </p>
+          {log.url && (
+            <p className="text-[10px] font-mono text-slate-500 truncate" title={log.url}>
+              URL: {log.url}
+            </p>
+          )}
           {log.user_agent && (
             <p className="text-[10px] text-slate-400 truncate" title={log.user_agent}>
               {log.user_agent}

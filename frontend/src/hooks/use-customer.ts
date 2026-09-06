@@ -214,15 +214,21 @@ export function useCustomerReviews(params: { page?: number; per_page?: number } 
   });
 }
 
-export function useCustomerNotifications(params: { page?: number; per_page?: number; unread_only?: boolean } = {}) {
+export function useCustomerNotifications(
+  params: { page?: number; per_page?: number; unread_only?: boolean } = {},
+  options: { enabled?: boolean } = {}
+) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return useQuery({
     queryKey: CUSTOMER_QUERY_KEYS.notifications(params),
     queryFn: () => customerService.getNotifications(params),
     staleTime: 30 * 1000,
+    enabled: options.enabled ?? isAuthenticated,
   });
 }
 
-export function useCustomerUnreadCount() {
+export function useCustomerUnreadCount(options: { enabled?: boolean } = {}) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const setUnreadCount = useNotificationStore((state) => state.setUnreadCount);
 
   return useQuery({
@@ -233,6 +239,7 @@ export function useCustomerUnreadCount() {
       return count;
     },
     refetchInterval: 60 * 1000,
+    enabled: options.enabled ?? isAuthenticated,
   });
 }
 

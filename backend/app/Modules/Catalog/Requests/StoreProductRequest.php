@@ -67,7 +67,7 @@ class StoreProductRequest extends FormRequest
             base_price: (float) $this->validated('base_price'),
             compare_at_price: $this->filled('compare_at_price') ? (float) $this->validated('compare_at_price') : null,
             cost_price: $this->filled('cost_price') ? (float) $this->validated('cost_price') : null,
-            currency_code: (string) ($this->validated('currency_code') ?? 'USD'),
+            currency_code: (string) ($this->validated('currency_code') ?? config('neurocommerce.currency.default', 'NGN')),
             tax_class: (string) ($this->validated('tax_class') ?? 'standard'),
             weight: $this->filled('weight') ? (float) $this->validated('weight') : null,
             weight_unit: (string) ($this->validated('weight_unit') ?? 'kg'),

@@ -137,7 +137,7 @@ describe("Checkout & Order Confirmation Flow Suite (STEP 26.5)", () => {
     expect(screen.getByText("Checkout & Hardware Acquisition")).toBeInTheDocument();
     expect(screen.getByText("1. Researcher Contact Information")).toBeInTheDocument();
     expect(screen.getByText("Neural Interface V2 Pro")).toBeInTheDocument();
-    expect(screen.getAllByText("$549.99").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("₦549.99").length).toBeGreaterThanOrEqual(1);
   });
 
   it("2. Step Transitions & Order Submission: completes 4-step flow and submits payload", async () => {

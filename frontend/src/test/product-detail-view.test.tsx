@@ -16,6 +16,7 @@ vi.mock("@/hooks/use-storefront", () => ({
   useSimilarRecommendations: vi.fn(),
   useAddToCart: vi.fn(),
   useToggleWishlist: vi.fn(),
+  useSubmitReview: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }));
 
 const mockProductDetail: ProductDetail = {
@@ -110,8 +111,8 @@ describe("Storefront Product Detail View Suite (STEP 26.2)", () => {
 
     expect(screen.getByRole("heading", { level: 1, name: "Neural Interface V2 Pro" })).toBeInTheDocument();
     expect(screen.getByText(/SKU: NIV2-PRO/i)).toBeInTheDocument();
-    expect(screen.getByText("$499.99")).toBeInTheDocument();
-    expect(screen.getByText("$599.99")).toBeInTheDocument();
+    expect(screen.getByText("₦499.99")).toBeInTheDocument();
+    expect(screen.getByText("₦599.99")).toBeInTheDocument();
     expect(screen.getByText(/Clinical grade 64-channel EEG device/i)).toBeInTheDocument();
     expect(screen.getByText("Exceptional Signal Quality")).toBeInTheDocument();
     expect(screen.getByText("Verified Purchase")).toBeInTheDocument();
@@ -208,6 +209,46 @@ describe("Storefront Product Detail View Suite (STEP 26.2)", () => {
     fireEvent.click(variantBtn);
 
     expect(screen.getByText(/SKU: NIV2-PRO-64CH/i)).toBeInTheDocument();
+  });
+
+  it("5b. Variant Selection with attributes shape and price override: updates price and SKU", async () => {
+    const productWithAttributes: ProductDetail = {
+      ...mockProductDetail,
+      variants: [
+        {
+          id: "var-2",
+          sku: "NIV2-PRO-128CH",
+          price: 799.99,
+          compare_at_price: 899.99,
+          is_active: true,
+          attributes: [
+            {
+              attribute_id: "attr-2",
+              attribute_name: "Channel Count",
+              attribute_slug: "channel-count",
+              value_id: "val-2",
+              value: "128 Channels",
+            },
+          ],
+        },
+      ],
+    };
+
+    vi.mocked(useProductBySlug).mockReturnValue({
+      data: productWithAttributes,
+      isLoading: false,
+      isError: false,
+      refetch: mockRefetch,
+    } as any);
+
+    await act(async () => {
+      render(<ProductDetailPage params={Promise.resolve({ slug: "neural-interface-v2-pro" })} />);
+    });
+
+    const variantBtn = screen.getByRole("button", { name: /128 channels/i });
+    fireEvent.click(variantBtn);
+
+    expect(screen.getByText(/SKU: NIV2-PRO-128CH/i)).toBeInTheDocument();
   });
 
   it("6. Loading State: renders structured skeleton placeholder", async () => {

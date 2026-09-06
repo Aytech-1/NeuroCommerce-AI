@@ -87,6 +87,6 @@ describe("Admin Customer Management Suite", () => {
     expect(screen.getByRole("heading", { name: "Elena Rostova" })).toBeInTheDocument();
     expect(screen.getByText("742 Evergreen Terrace")).toBeInTheDocument();
     expect(screen.getByText("Springfield, OR 97477")).toBeInTheDocument();
-    expect(screen.getByText("$1,250.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,250.00")).toBeInTheDocument();
   });
 });

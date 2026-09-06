@@ -175,7 +175,7 @@ describe("End-to-End Admin Management Lifecycle Suite", () => {
         <DashboardPage />
       </QueryClientProvider>
     );
-    expect(screen.getByText("$1,245,000.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,245,000.00")).toBeInTheDocument();
     expect(screen.getByText("842")).toBeInTheDocument();
     expect(screen.getByText("318")).toBeInTheDocument();
   });
@@ -199,7 +199,7 @@ describe("End-to-End Admin Management Lifecycle Suite", () => {
     );
     expect(screen.getByText("Orders & Fulfillment")).toBeInTheDocument();
     expect(screen.getByText("ORD-2026-0001")).toBeInTheDocument();
-    expect(screen.getByText("$549.99")).toBeInTheDocument();
+    expect(screen.getByText("₦549.99")).toBeInTheDocument();
   });
 
   it("4. Staff & RBAC Governance: lists active laboratory personnel", () => {

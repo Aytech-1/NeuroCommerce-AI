@@ -79,7 +79,7 @@ class EloquentProductRepository extends AbstractRepository implements ProductRep
     public function getPaginatedAdmin(array $filters, int $perPage = 20): LengthAwarePaginator
     {
         $query = $this->model->newQuery()
-            ->with(['category', 'brand', 'primaryImage']);
+            ->with(['category', 'brand', 'primaryImage', 'images']);
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -280,8 +280,12 @@ class EloquentProductRepository extends AbstractRepository implements ProductRep
     public function addImage(string $productId, array $data): ProductImage
     {
         $data['product_id'] = $productId;
+        $hasPrimary = ProductImage::where('product_id', $productId)->where('is_primary', true)->exists();
+
         if (!empty($data['is_primary'])) {
             ProductImage::where('product_id', $productId)->update(['is_primary' => false]);
+        } elseif (!$hasPrimary) {
+            $data['is_primary'] = true;
         }
 
         return ProductImage::create($data);

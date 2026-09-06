@@ -33,8 +33,9 @@ class DiscountCalculator
         float $subtotal,
         Collection|array $cartItems = [],
         float $shippingCost = 0.0,
-        string $currency = 'USD'
+        ?string $currency = null
     ): Money {
+        $currency = $currency ?? (string) config('neurocommerce.currency.default', 'NGN');
         $subtotalMoney = Money::fromDecimal($subtotal, $currency);
 
         $eligibleSubtotal = $this->calculateEligibleSubtotal($coupon, $cartItems, $subtotal, $currency);

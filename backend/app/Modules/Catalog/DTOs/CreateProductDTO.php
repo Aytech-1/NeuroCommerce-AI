@@ -24,7 +24,7 @@ class CreateProductDTO extends AbstractDTO
         public float|string $base_price = 0.0,
         public float|string|null $compare_at_price = null,
         public float|string|null $cost_price = null,
-        public string $currency_code = 'USD',
+        public string $currency_code = 'NGN',
         public string $tax_class = 'standard',
         public float|string|null $weight = null,
         public string $weight_unit = 'kg',

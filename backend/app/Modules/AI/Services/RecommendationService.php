@@ -34,7 +34,7 @@ class RecommendationService
 
         $cacheKey = "rec:user:{$userId}:personalized";
 
-        return Cache::remember($cacheKey, 900, function () use ($userId, $context, $limit) {
+        $loader = function () use ($userId, $context, $limit) {
             $startTime = microtime(true);
             $rawPredictions = $this->aiProvider->predict($userId, $context, $limit);
             $latencyMs = (int) round((microtime(true) - $startTime) * 1000);
@@ -74,23 +74,33 @@ class RecommendationService
             }
 
             return $products;
-        });
+        };
+
+        try {
+            return Cache::remember($cacheKey, 900, $loader);
+        } catch (\Throwable) {
+            return $loader();
+        }
     }
 
     public function getTrending(int $limit = 10): Collection
     {
-        return Cache::remember("rec:trending:{$limit}", 900, function () use ($limit) {
-            return Product::where('status', 'active')
-                ->with(['category:id,name', 'brand:id,name'])
-                ->orderByDesc('total_sold')
-                ->limit($limit)
-                ->get();
-        });
+        $loader = fn () => Product::where('status', 'active')
+            ->with(['category:id,name', 'brand:id,name', 'primaryImage', 'images'])
+            ->orderByDesc('total_sold')
+            ->limit($limit)
+            ->get();
+
+        try {
+            return Cache::remember("rec:trending:{$limit}", 900, $loader);
+        } catch (\Throwable) {
+            return $loader();
+        }
     }
 
     public function getSimilar(string $productId, int $limit = 10): Collection
     {
-        return Cache::remember("rec:similar:{$productId}:{$limit}", 900, function () use ($productId, $limit) {
+        $loader = function () use ($productId, $limit) {
             $rawPredictions = $this->aiProvider->getSimilar($productId, $limit);
 
             if (empty($rawPredictions)) {
@@ -102,20 +112,26 @@ class RecommendationService
                 return Product::where('status', 'active')
                     ->where('id', '!=', $productId)
                     ->where('category_id', $baseProduct->category_id)
-                    ->with(['category:id,name', 'brand:id,name'])
+                    ->with(['category:id,name', 'brand:id,name', 'primaryImage', 'images'])
                     ->limit($limit)
                     ->get();
             }
 
             $productIds = array_column($rawPredictions, 'product_id');
             return $this->hydrateProducts($productIds);
-        });
+        };
+
+        try {
+            return Cache::remember("rec:similar:{$productId}:{$limit}", 900, $loader);
+        } catch (\Throwable) {
+            return $loader();
+        }
     }
 
     public function getCrossSell(?string $userId, array $cartProductIds = [], int $limit = 5): Collection
     {
         $query = Product::where('status', 'active')
-            ->with(['category:id,name', 'brand:id,name']);
+            ->with(['category:id,name', 'brand:id,name', 'primaryImage', 'images']);
 
         if (!empty($cartProductIds)) {
             $query->whereNotIn('id', $cartProductIds);
@@ -179,7 +195,7 @@ class RecommendationService
 
         return Product::whereIn('id', $productIds)
             ->where('status', 'active')
-            ->with(['category:id,name', 'brand:id,name'])
+            ->with(['category:id,name', 'brand:id,name', 'primaryImage', 'images'])
             ->get();
     }
 }

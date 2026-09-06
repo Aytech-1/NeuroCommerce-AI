@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import CartPage from "@/app/(store)/cart/page";
 import {
@@ -176,8 +176,8 @@ describe("STEP 28.3 — Storefront Shopping Bag & Cart Experience Suite", () => 
     expect(screen.getByText("Synaptic Telemetry Bio-Amplifier")).toBeInTheDocument();
     expect(screen.getByText("Low Stock (2 left)")).toBeInTheDocument();
 
-    expect(screen.getByText("$2,798.00")).toBeInTheDocument();
-    const prices500 = screen.getAllByText("$500.00");
+    expect(screen.getByText("₦2,798.00")).toBeInTheDocument();
+    const prices500 = screen.getAllByText("₦500.00");
     expect(prices500.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -287,7 +287,7 @@ describe("STEP 28.3 — Storefront Shopping Bag & Cart Experience Suite", () => 
 
     expect(screen.getByText("Order Summary")).toBeInTheDocument();
     expect(screen.getByText("Hardware Subtotal")).toBeInTheDocument();
-    const totals = screen.getAllByText("$3,298.00");
+    const totals = screen.getAllByText("₦3,298.00");
     expect(totals.length).toBeGreaterThanOrEqual(1);
 
     const checkoutLink = screen.getByRole("link", { name: /proceed to checkout/i });
@@ -338,7 +338,7 @@ describe("STEP 28.3 — Storefront Shopping Bag & Cart Experience Suite", () => 
 
     expect(screen.getByText("Active Coupon: NEURO25")).toBeInTheDocument();
     expect(screen.getByText("Promotional Discount")).toBeInTheDocument();
-    expect(screen.getByText("-$250.00")).toBeInTheDocument();
+    expect(screen.getByText("-₦250.00")).toBeInTheDocument();
 
     const removeCouponBtn = screen.getByRole("button", { name: "Remove" });
     fireEvent.click(removeCouponBtn);

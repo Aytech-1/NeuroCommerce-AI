@@ -111,7 +111,7 @@ class EloquentUserRepository extends AbstractRepository implements UserRepositor
      */
     public function searchUsers(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
-        $query = $this->model->newQuery()->with(['roles', 'customerProfile']);
+        $query = $this->model->newQuery()->with(['roles', 'customerProfile', 'staffProfile']);
 
         if (! empty($filters['search'])) {
             $search = '%' . trim((string) $filters['search']) . '%';
@@ -124,7 +124,13 @@ class EloquentUserRepository extends AbstractRepository implements UserRepositor
         }
 
         if (! empty($filters['user_type'])) {
-            $query->where('user_type', $filters['user_type']);
+            if (is_array($filters['user_type'])) {
+                $query->whereIn('user_type', $filters['user_type']);
+            } elseif (str_contains((string) $filters['user_type'], ',')) {
+                $query->whereIn('user_type', explode(',', (string) $filters['user_type']));
+            } else {
+                $query->where('user_type', $filters['user_type']);
+            }
         }
 
         if (isset($filters['is_active'])) {

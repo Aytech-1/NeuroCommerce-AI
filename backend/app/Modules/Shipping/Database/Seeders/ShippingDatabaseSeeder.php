@@ -27,30 +27,28 @@ class ShippingDatabaseSeeder extends Seeder
         $domesticZone->syncCountries(['US']);
 
         // Rates for US
-        ShipRate::firstOrCreate(
+        ShipRate::updateOrCreate(
             ['zone_id' => $domesticZone->id, 'carrier' => 'mock_carrier', 'service_level' => 'Standard Ground'],
             [
-                'id' => (string) Str::uuid(),
                 'min_weight' => 0.0000,
                 'max_weight' => 20.0000,
                 'min_order_amount' => 0.0000,
-                'rate' => 5.9900,
-                'currency_code' => 'USD',
+                'rate' => 0.0000,
+                'currency_code' => 'NGN',
                 'estimated_days_min' => 3,
                 'estimated_days_max' => 5,
                 'is_active' => true,
             ]
         );
 
-        ShipRate::firstOrCreate(
+        ShipRate::updateOrCreate(
             ['zone_id' => $domesticZone->id, 'carrier' => 'mock_carrier', 'service_level' => 'Express 2-Day'],
             [
-                'id' => (string) Str::uuid(),
                 'min_weight' => 0.0000,
                 'max_weight' => 20.0000,
                 'min_order_amount' => 0.0000,
-                'rate' => 14.9900,
-                'currency_code' => 'USD',
+                'rate' => 22500.0000,
+                'currency_code' => 'NGN',
                 'estimated_days_min' => 1,
                 'estimated_days_max' => 2,
                 'is_active' => true,
@@ -65,15 +63,14 @@ class ShippingDatabaseSeeder extends Seeder
         );
         $naZone->syncCountries(['CA', 'MX']);
 
-        ShipRate::firstOrCreate(
+        ShipRate::updateOrCreate(
             ['zone_id' => $naZone->id, 'carrier' => 'mock_carrier', 'service_level' => 'International Standard'],
             [
-                'id' => (string) Str::uuid(),
                 'min_weight' => 0.0000,
                 'max_weight' => 30.0000,
                 'min_order_amount' => 0.0000,
-                'rate' => 19.9900,
-                'currency_code' => 'USD',
+                'rate' => 30000.0000,
+                'currency_code' => 'NGN',
                 'estimated_days_min' => 5,
                 'estimated_days_max' => 10,
                 'is_active' => true,
@@ -88,15 +85,14 @@ class ShippingDatabaseSeeder extends Seeder
         );
         $europeZone->syncCountries(['GB', 'DE', 'FR', 'IT', 'ES', 'NL']);
 
-        ShipRate::firstOrCreate(
+        ShipRate::updateOrCreate(
             ['zone_id' => $europeZone->id, 'carrier' => 'mock_carrier', 'service_level' => 'Global Priority'],
             [
-                'id' => (string) Str::uuid(),
                 'min_weight' => 0.0000,
                 'max_weight' => 30.0000,
                 'min_order_amount' => 0.0000,
-                'rate' => 29.9900,
-                'currency_code' => 'USD',
+                'rate' => 45000.0000,
+                'currency_code' => 'NGN',
                 'estimated_days_min' => 4,
                 'estimated_days_max' => 7,
                 'is_active' => true,

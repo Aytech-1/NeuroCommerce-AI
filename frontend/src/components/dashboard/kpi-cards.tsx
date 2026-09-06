@@ -3,7 +3,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
 import { DashboardSummary } from "@/services/dashboard-service";
-import { DollarSign, ShoppingCart, Users, Package, AlertCircle } from "lucide-react";
+import { TrendingUp, ShoppingCart, Users, Package, AlertCircle } from "lucide-react";
 
 interface KpiCardsProps {
   summary?: DashboardSummary;
@@ -61,7 +61,7 @@ export function KpiCards({ summary, isLoading, isError, onRetry }: KpiCardsProps
             TOTAL REVENUE
           </span>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-2xs">
-            <DollarSign className="h-5 w-5" aria-hidden="true" />
+            <TrendingUp className="h-5 w-5" aria-hidden="true" />
           </div>
         </div>
         <div className="mt-4 space-y-1">

@@ -25,7 +25,7 @@ class PaymentDatabaseSeeder extends Seeder
         $orders = Order::query()->where('status', 'paid')->take(10)->get();
 
         foreach ($orders as $order) {
-            $payment = Payment::query()->firstOrCreate(
+            $payment = Payment::query()->updateOrCreate(
                 ['order_id' => $order->id],
                 [
                     'gateway' => 'stripe',
@@ -40,7 +40,7 @@ class PaymentDatabaseSeeder extends Seeder
                 ]
             );
 
-            PaymentTransaction::query()->firstOrCreate(
+            PaymentTransaction::query()->updateOrCreate(
                 ['payment_id' => $payment->id],
                 [
                     'type' => TransactionType::CAPTURE,

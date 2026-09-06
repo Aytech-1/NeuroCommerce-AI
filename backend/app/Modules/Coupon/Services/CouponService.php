@@ -152,12 +152,13 @@ class CouponService extends AbstractService
         Collection|array $cartItems = [],
         ?string $userId = null,
         float $shippingCost = 0.0,
-        string $currency = 'USD'
+        ?string $currency = null
     ): CouponValidationResultDTO {
+        $currency = $currency ?? (string) config('neurocommerce.currency.default', 'NGN');
         $coupon = $this->couponRepository->findByCode($code);
 
         if (!$coupon) {
-            return CouponValidationResultDTO::invalid('Coupon code not found.', 'COUPON_NOT_FOUND');
+            return CouponValidationResultDTO::invalid('Coupon code not found.', 'COUPON_NOT_FOUND', $currency);
         }
 
         return $this->validator->validate($coupon, $subtotal, $cartItems, $userId, $shippingCost, $currency);

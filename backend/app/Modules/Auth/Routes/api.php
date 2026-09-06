@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Public Authentication Routes
+| Public Authentication Routes (Rate Limited)
 |--------------------------------------------------------------------------
 */
-Route::prefix('api/v1/auth')->middleware(['api'])->group(function () {
+Route::prefix('api/v1/auth')->middleware(['api', 'rate_limit:10,1'])->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('auth.forgot-password');
@@ -25,7 +25,7 @@ Route::prefix('api/v1/auth')->middleware(['api'])->group(function () {
 | Authenticated Customer Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('api/v1/auth')->middleware(['api', 'auth:sanctum'])->group(function () {
+Route::prefix('api/v1/auth')->middleware(['api', 'auth:sanctum', 'active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::post('/refresh-token', [AuthController::class, 'refreshToken'])->name('auth.refresh-token');
     Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
@@ -42,7 +42,7 @@ Route::prefix('api/v1/auth')->middleware(['api', 'auth:sanctum'])->group(functio
 | Authenticated Address Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('api/v1/addresses')->middleware(['api', 'auth:sanctum'])->group(function () {
+Route::prefix('api/v1/addresses')->middleware(['api', 'auth:sanctum', 'active'])->group(function () {
     Route::get('/', [AddressController::class, 'index'])->name('addresses.index');
     Route::post('/', [AddressController::class, 'store'])->name('addresses.store');
     Route::get('/{id}', [AddressController::class, 'show'])->name('addresses.show');

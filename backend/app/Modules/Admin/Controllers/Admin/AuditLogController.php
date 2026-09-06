@@ -34,6 +34,9 @@ class AuditLogController extends Controller
 
         $perPage = PaginationHelper::getPerPage($request, 50, 100);
         $filters = $request->query('filter', []);
+        if ($request->has('search')) {
+            $filters['search'] = $request->query('search');
+        }
 
         $logs = $this->auditLogService->getAuditLogs($filters, $perPage);
 

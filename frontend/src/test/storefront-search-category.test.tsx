@@ -10,6 +10,12 @@ import {
 import { ProductItem } from "@/services/catalog-service";
 
 vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/search",
   useSearchParams: () => ({
     get: (key: string) => (key === "q" ? "EEG" : null),
   }),
@@ -19,6 +25,8 @@ vi.mock("@/hooks/use-storefront", () => ({
   useCategoryBySlug: vi.fn(),
   useCategoryProducts: vi.fn(),
   useSearchProducts: vi.fn(),
+  useCategoriesTree: vi.fn(() => ({ data: [] })),
+  useBrands: vi.fn(() => ({ data: [] })),
   useAddToCart: vi.fn(() => ({ mutate: vi.fn() })),
 }));
 
@@ -71,7 +79,7 @@ describe("Storefront Category & Search Suite", () => {
       render(<SearchPage />);
     });
 
-    expect(screen.getByText(/Search Results for/i)).toBeInTheDocument();
+    expect(screen.getByText(/Results for/i)).toBeInTheDocument();
     expect(screen.getByText(/EEG/i)).toBeInTheDocument();
     expect(screen.getByText("Synaptic Cortex Adapter")).toBeInTheDocument();
   });

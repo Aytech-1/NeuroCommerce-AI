@@ -59,7 +59,7 @@ describe("Dashboard Widgets Component Suite", () => {
 
     expect(screen.getByText("Neural Headset X1")).toBeInTheDocument();
     expect(screen.getByText("140")).toBeInTheDocument();
-    expect(screen.getByText(/Audio • \$349\.99/i)).toBeInTheDocument();
+    expect(screen.getByText(/Audio • ₦349\.99/i)).toBeInTheDocument();
   });
 
   it("renders Low Stock alerts with warning badge", () => {
@@ -74,7 +74,7 @@ describe("Dashboard Widgets Component Suite", () => {
 
     expect(screen.getByText("ORD-2026-9901")).toBeInTheDocument();
     expect(screen.getByText("Alice Smith")).toBeInTheDocument();
-    expect(screen.getByText("$499.50")).toBeInTheDocument();
+    expect(screen.getByText("₦499.50")).toBeInTheDocument();
     expect(screen.getByText("Processing")).toBeInTheDocument();
   });
 });

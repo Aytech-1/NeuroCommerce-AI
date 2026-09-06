@@ -305,7 +305,7 @@ describe("STEP 28.2 — Storefront Brand Discovery & Brand Landing Suite", () =>
 
       expect(screen.getByText("CortexLink Pro BCI Headband")).toBeInTheDocument();
       expect(screen.getByText("CortexSense Electrode Array")).toBeInTheDocument();
-      expect(screen.getByText("$1,699.00")).toBeInTheDocument();
+      expect(screen.getByText("₦1,699.00")).toBeInTheDocument();
       expect(screen.getByText("Low Stock (3 left)")).toBeInTheDocument();
     });
 

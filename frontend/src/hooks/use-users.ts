@@ -84,3 +84,15 @@ export function useSyncRolePermissions() {
     },
   });
 }
+
+export function useAssignUserRoles() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, roles }: { id: string; roles: string[] }) =>
+      userService.assignRoles(id, roles),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.user(variables.id) });
+    },
+  });
+}

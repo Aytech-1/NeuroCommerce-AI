@@ -20,6 +20,12 @@ vi.mock("@/services/catalog-service", () => ({
 vi.mock("@/hooks/use-catalog", () => ({
   useCategories: vi.fn(),
   useBrands: vi.fn(),
+  useUploadProductImages: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useDeleteProductImage: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useReorderProductImages: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useCreateVariant: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useUpdateVariant: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  useDeleteVariant: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
 }));
 
 describe("Admin Product Creation Form", () => {
@@ -41,7 +47,7 @@ describe("Admin Product Creation Form", () => {
 
     expect(screen.getByLabelText(/product name \*/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/sku \(stock keeping unit\) \*/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/base price \(\$\) \*/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/base price \(₦\) \*/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /save product/i })).toBeInTheDocument();
   });
 
@@ -78,7 +84,7 @@ describe("Admin Product Creation Form", () => {
     fireEvent.change(screen.getByLabelText(/sku \(stock keeping unit\) \*/i), {
       target: { value: "SHG2-001" },
     });
-    fireEvent.change(screen.getByLabelText(/base price \(\$\) \*/i), {
+    fireEvent.change(screen.getByLabelText(/base price \(₦\) \*/i), {
       target: { value: "349.99" },
     });
 

@@ -304,7 +304,7 @@ describe("STEP 28.1 — Storefront Category Discovery & Category Landing Suite",
 
       expect(screen.getByText("NeuroCap Elite 64-Channel EEG")).toBeInTheDocument();
       expect(screen.getByText("SynapseLink Wireless BCI Receiver")).toBeInTheDocument();
-      expect(screen.getByText("$2,299.00")).toBeInTheDocument();
+      expect(screen.getByText("₦2,299.00")).toBeInTheDocument();
       expect(screen.getByText("Low Stock (5 left)")).toBeInTheDocument();
     });
 

@@ -6,8 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, ChevronRight, Package, Tag, DollarSign, Eye } from "lucide-react";
+import { ArrowLeft, Save, ChevronRight, Package, Tag, Coins, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { getCurrencySymbol } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
+import { ProductImageManager } from "@/components/admin/product-image-manager";
 import { catalogService } from "@/services/catalog-service";
 import { useCategories, useBrands } from "@/hooks/use-catalog";
 import { ApiError } from "@/types/api";
@@ -51,6 +53,7 @@ export default function CreateProductPage() {
   const categoriesQuery = useCategories();
   const brandsQuery = useBrands();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -82,7 +85,29 @@ export default function CreateProductPage() {
       };
 
       const product = await catalogService.createProduct(payload);
-      toast.success(`Product "${product.name}" created successfully!`);
+
+      // Upload pending images if selected
+      if (pendingFiles.length > 0) {
+        try {
+          const formData = new FormData();
+          if (pendingFiles.length === 1) {
+            formData.append("image", pendingFiles[0]);
+          } else {
+            pendingFiles.forEach((file) => {
+              formData.append("images[]", file);
+            });
+          }
+          await catalogService.uploadProductImages(product.id, formData);
+          toast.success(`Product "${product.name}" created with ${pendingFiles.length} images!`);
+        } catch (imgErr: unknown) {
+          const imgErrMsg =
+            imgErr instanceof Error ? imgErr.message : "Failed to upload attached images.";
+          toast.warning(`Product "${product.name}" created, but image upload failed: ${imgErrMsg}`);
+        }
+      } else {
+        toast.success(`Product "${product.name}" created successfully!`);
+      }
+
       router.push(`/admin/products/${product.id}`);
     } catch (err: unknown) {
       const error = err as ApiError;
@@ -310,7 +335,7 @@ export default function CreateProductPage() {
             <div className="p-6 sm:p-7 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-6">
               <div className="border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                  <Coins className="h-4 w-4 text-blue-600" aria-hidden="true" />
                   <h2 className="text-base font-extrabold text-slate-900">Pricing</h2>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">Base currency pricing and discount comparison.</p>
@@ -322,7 +347,7 @@ export default function CreateProductPage() {
                   name="base_price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-bold text-slate-700">Base Price ($) *</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate-700">Base Price ({getCurrencySymbol()}) *</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" min="0" placeholder="0.00" className="h-11 rounded-xl bg-slate-50 text-xs" {...field} />
                       </FormControl>
@@ -336,7 +361,7 @@ export default function CreateProductPage() {
                   name="compare_at_price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-bold text-slate-700">Compare-At Price ($)</FormLabel>
+                      <FormLabel className="text-xs font-bold text-slate-700">Compare-At Price ({getCurrencySymbol()})</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" min="0" placeholder="0.00" className="h-11 rounded-xl bg-slate-50 text-xs" {...field} />
                       </FormControl>
@@ -349,7 +374,14 @@ export default function CreateProductPage() {
             </div>
           </div>
 
-          {/* Section 3: Status & Visibility */}
+          {/* Section 3: Media & Gallery */}
+          <ProductImageManager
+            pendingFiles={pendingFiles}
+            onPendingFilesChange={setPendingFiles}
+            disabled={form.formState.isSubmitting}
+          />
+
+          {/* Section 4: Status & Visibility */}
           <div className="p-6 sm:p-7 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs space-y-6">
             <div className="border-b border-slate-100 pb-4">
               <div className="flex items-center gap-2">

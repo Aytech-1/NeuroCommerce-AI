@@ -40,13 +40,14 @@ class CouponValidator
         Collection|array $cartItems = [],
         ?string $userId = null,
         float $shippingCost = 0.0,
-        string $currency = 'USD'
+        ?string $currency = null
     ): CouponValidationResultDTO {
+        $currency = $currency ?? (string) config('neurocommerce.currency.default', 'NGN');
         $now = now();
 
         // 1. Active status
         if (!$coupon->is_active) {
-            return CouponValidationResultDTO::invalid('Coupon is not active or has been disabled.', 'COUPON_INACTIVE');
+            return CouponValidationResultDTO::invalid('Coupon is not active or has been disabled.', 'COUPON_INACTIVE', $currency);
         }
 
         // 2. Starts at date

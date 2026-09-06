@@ -122,8 +122,8 @@ describe("Catalog & Product Discovery UI Suite (STEP 26.1)", () => {
 
     expect(screen.getByText("Neural Interface V2 Pro")).toBeInTheDocument();
     expect(screen.getByText("Medical EEG Headset 64-Channel")).toBeInTheDocument();
-    expect(screen.getByText("$1,149.00")).toBeInTheDocument();
-    expect(screen.getByText("$2,499.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,149.00")).toBeInTheDocument();
+    expect(screen.getByText("₦2,499.00")).toBeInTheDocument();
   });
 
   it("3. Filter Controls: updates search query and category filters", () => {

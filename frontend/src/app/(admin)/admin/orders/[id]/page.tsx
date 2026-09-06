@@ -441,13 +441,20 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
               )}
 
-              <div className="pt-2 border-t border-slate-100">
-                <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] block mb-1 flex items-center gap-1">
-                  <Truck className="h-3 w-3 text-blue-600" aria-hidden="true" /> Shipping Method
-                </span>
-                <p className="font-extrabold text-slate-900">
-                  {order.shipping_method || "Standard Delivery"}
-                </p>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                  <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] block mb-1 flex items-center gap-1">
+                    <Truck className="h-3 w-3 text-blue-600" aria-hidden="true" /> Shipping Method
+                  </span>
+                  <p className="font-extrabold text-slate-900">
+                    {order.shipping_method || "Standard Delivery"}
+                  </p>
+                </div>
+                <Link href={`/admin/shipments?search=${order.order_number}`}>
+                  <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px] font-bold text-blue-600 hover:bg-blue-50 rounded-lg">
+                    <span>Logistics</span>
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

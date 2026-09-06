@@ -125,8 +125,8 @@ describe("Customer Order Detail & Fulfillment Suite (STEP 26.9)", () => {
     });
 
     expect(screen.getByText("Financial Breakdown")).toBeInTheDocument();
-    expect(screen.getAllByText("$549.99").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("$608.99")).toBeInTheDocument();
+    expect(screen.getAllByText("₦549.99").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("₦608.99")).toBeInTheDocument();
     expect(screen.getByText("18144 El Camino Real")).toBeInTheDocument();
   });
 

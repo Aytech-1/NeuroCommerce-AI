@@ -28,3 +28,12 @@ Route::prefix('api/v1/admin/orders')->middleware(['api', 'auth:sanctum'])->group
         ->middleware('permission:order.view')
         ->name('api.v1.admin.orders.timeline');
 });
+
+Route::prefix('api/v1/admin/invoices')->middleware(['api', 'auth:sanctum'])->group(function () {
+    Route::get('/', [\App\Modules\Order\Controllers\Admin\InvoiceController::class, 'index'])
+        ->middleware('permission:order.view')
+        ->name('api.v1.admin.invoices.index');
+    Route::get('/{id}', [\App\Modules\Order\Controllers\Admin\InvoiceController::class, 'show'])
+        ->middleware('permission:order.view')
+        ->name('api.v1.admin.invoices.show');
+});

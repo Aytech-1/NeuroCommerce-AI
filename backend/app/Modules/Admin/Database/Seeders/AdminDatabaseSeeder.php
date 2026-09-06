@@ -30,19 +30,19 @@ class AdminDatabaseSeeder extends Seeder
                 ['date' => $date],
                 [
                     'total_orders' => rand(10, 50),
-                    'total_revenue' => rand(1500, 7500),
-                    'total_tax' => rand(120, 600),
-                    'total_shipping' => rand(50, 250),
-                    'total_discounts' => rand(75, 375),
-                    'net_revenue' => rand(1200, 6000),
-                    'avg_order_value' => rand(120, 180),
+                    'total_revenue' => rand(2250000, 11250000),
+                    'total_tax' => rand(180000, 900000),
+                    'total_shipping' => rand(75000, 375000),
+                    'total_discounts' => rand(112500, 562500),
+                    'net_revenue' => rand(1800000, 9000000),
+                    'avg_order_value' => rand(180000, 270000),
                     'total_items_sold' => rand(20, 120),
                     'unique_customers' => rand(8, 40),
                     'new_customers' => rand(3, 15),
                     'returning_customers' => rand(5, 25),
                     'refund_count' => 0,
                     'refund_amount' => 0.0000,
-                    'currency_code' => 'USD',
+                    'currency_code' => 'NGN',
                 ]
             );
 
@@ -70,8 +70,8 @@ class AdminDatabaseSeeder extends Seeder
                 'period_value' => $now->toDateString(),
             ],
             [
-                'metric_value' => 148500.0000,
-                'metadata' => ['currency' => 'USD'],
+                'metric_value' => 222750000.0000,
+                'metadata' => ['currency' => 'NGN'],
             ]
         );
 

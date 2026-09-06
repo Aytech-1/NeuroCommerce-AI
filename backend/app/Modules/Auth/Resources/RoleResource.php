@@ -28,6 +28,7 @@ class RoleResource extends JsonResource
             'guard_name' => $this->guard_name,
             'description' => $this->description,
             'is_system' => (bool) $this->is_system,
+            'permissions_count' => $this->permissions_count ?? ($this->relationLoaded('permissions') ? $this->permissions->count() : 0),
             'permissions' => PermissionResource::collection($this->whenLoaded('permissions')),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

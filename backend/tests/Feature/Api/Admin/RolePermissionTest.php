@@ -21,6 +21,11 @@ test('super admin can view roles and permissions', function () {
     $rolesResponse->assertStatus(200)
         ->assertJson([
             'success' => true,
+        ])
+        ->assertJsonStructure([
+            'data' => [
+                '*' => ['id', 'name', 'guard_name', 'is_system', 'permissions_count'],
+            ],
         ]);
 
     $permissionsResponse = $this->getJson('/api/v1/admin/permissions');
@@ -60,3 +65,38 @@ test('super admin can create new custom role and sync permissions', function () 
     $role = Role::find($roleId);
     expect($role->hasPermissionTo('cms.delete', 'api'))->toBeTrue();
 });
+
+test('system roles cannot be deleted', function () {
+    $superAdmin = User::where('email', 'admin@neurocommerce.com')->first();
+    Sanctum::actingAs($superAdmin, ['*']);
+
+    $adminRole = Role::where('name', 'admin')->first();
+
+    $response = $this->deleteJson("/api/v1/admin/roles/{$adminRole->id}");
+    $response->assertStatus(422);
+});
+
+test('super admin user account cannot be deleted or deactivated', function () {
+    $superAdmin = User::where('email', 'admin@neurocommerce.com')->first();
+    Sanctum::actingAs($superAdmin, ['*']);
+
+    // Attempt delete
+    $deleteResponse = $this->deleteJson("/api/v1/admin/users/{$superAdmin->id}");
+    $deleteResponse->assertStatus(422);
+
+    // Attempt deactivate
+    $deactivateResponse = $this->patchJson("/api/v1/admin/users/{$superAdmin->id}/status", [
+        'is_active' => false,
+    ]);
+    $deactivateResponse->assertStatus(422);
+});
+
+test('unprivileged customer receives 403 on role and permission endpoints', function () {
+    $customer = User::factory()->customer()->create();
+    Sanctum::actingAs($customer, ['*']);
+
+    $this->getJson('/api/v1/admin/roles')->assertStatus(403);
+    $this->getJson('/api/v1/admin/permissions')->assertStatus(403);
+    $this->postJson('/api/v1/admin/roles', ['name' => 'attacker_role'])->assertStatus(403);
+});
+

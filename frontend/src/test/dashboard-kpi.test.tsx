@@ -44,8 +44,8 @@ describe("Dashboard KPI Cards Component", () => {
 
     // Total Revenue
     expect(screen.getByText(/total revenue/i)).toBeInTheDocument();
-    expect(screen.getByText(/\$125,000/i)).toBeInTheDocument();
-    expect(screen.getByText(/\$32,000/i)).toBeInTheDocument();
+    expect(screen.getByText(/₦125,000/i)).toBeInTheDocument();
+    expect(screen.getByText(/₦32,000/i)).toBeInTheDocument();
 
     // Total Orders
     expect(screen.getByText(/total orders/i)).toBeInTheDocument();

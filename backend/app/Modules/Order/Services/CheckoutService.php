@@ -69,8 +69,9 @@ class CheckoutService extends AbstractService
         }
 
         // 2. Validate All Cart Items and Snapshot Pricing
+        $currency = $cart->currency_code ?: (string) config('neurocommerce.currency.default', 'NGN');
         $verifiedItems = [];
-        $subtotalMoney = Money::fromCents(0, $cart->currency_code ?: 'USD');
+        $subtotalMoney = Money::fromCents(0, $currency);
 
         foreach ($cart->items as $cartItem) {
             /** @var Product|null $product */
@@ -84,7 +85,7 @@ class CheckoutService extends AbstractService
             }
 
             $unitPrice = (float) $cartItem->unit_price;
-            $itemSubtotalMoney = Money::fromDecimal($unitPrice * $cartItem->quantity, $cart->currency_code ?: 'USD');
+            $itemSubtotalMoney = Money::fromDecimal($unitPrice * $cartItem->quantity, $currency);
             $subtotalMoney = $subtotalMoney->add($itemSubtotalMoney);
 
             $verifiedItems[] = [
@@ -102,7 +103,7 @@ class CheckoutService extends AbstractService
             $couponCode = trim(str_replace('Coupon: ', '', $cart->notes));
         }
 
-        $discountMoney = Money::fromCents(0, $cart->currency_code ?: 'USD');
+        $discountMoney = Money::fromCents(0, $currency);
         $couponValidationResult = null;
 
         if ($couponCode) {
@@ -113,17 +114,17 @@ class CheckoutService extends AbstractService
                     subtotal: $subtotalMoney->getFormattedAmount(),
                     cartItems: $cart->items()->with('product')->get(),
                     userId: $userId,
-                    currency: $cart->currency_code ?: 'USD'
+                    currency: $currency
                 );
 
                 if ($couponValidationResult->isValid) {
-                    $discountMoney = Money::fromDecimal($couponValidationResult->discountAmount, $cart->currency_code ?: 'USD');
+                    $discountMoney = Money::fromDecimal($couponValidationResult->discountAmount, $currency);
                 } elseif (strtolower($couponCode) === 'welcome10') {
-                    $discountMoney = Money::fromDecimal(round($subtotalMoney->getFormattedAmount() * 0.10, 2), $cart->currency_code ?: 'USD');
+                    $discountMoney = Money::fromDecimal(round($subtotalMoney->getFormattedAmount() * 0.10, 2), $currency);
                 }
             } catch (\Throwable) {
                 if (strtolower($couponCode) === 'welcome10') {
-                    $discountMoney = Money::fromDecimal(round($subtotalMoney->getFormattedAmount() * 0.10, 2), $cart->currency_code ?: 'USD');
+                    $discountMoney = Money::fromDecimal(round($subtotalMoney->getFormattedAmount() * 0.10, 2), $currency);
                 }
             }
         }
@@ -143,7 +144,7 @@ class CheckoutService extends AbstractService
 
         // 5. Atomic Order Creation
         /** @var Order $order */
-        $order = DB::transaction(function () use ($userId, $dto, $cart, $subtotalMoney, $discountMoney, $shippingCost, $taxCost, $totalAmount, $verifiedItems, $couponValidationResult) {
+        $order = DB::transaction(function () use ($userId, $dto, $cart, $currency, $subtotalMoney, $discountMoney, $shippingCost, $taxCost, $totalAmount, $verifiedItems, $couponValidationResult) {
             $shippingAddress = Address::create([
                 'addressable_type' => User::class,
                 'addressable_id' => $userId ?? (string) Str::uuid(),
@@ -178,7 +179,7 @@ class CheckoutService extends AbstractService
                 'order_number' => 'ORD-' . strtoupper(Str::random(10)),
                 'user_id' => $userId,
                 'status' => OrderStatus::PENDING,
-                'currency_code' => $cart->currency_code ?: 'USD',
+                'currency_code' => $currency,
                 'subtotal' => $subtotalMoney->getFormattedAmount(),
                 'tax_amount' => $taxCost,
                 'shipping_amount' => $shippingCost,
@@ -292,6 +293,7 @@ class CheckoutService extends AbstractService
             throw new BusinessRuleException('Cart is empty.');
         }
 
+        $currency = $cart->currency_code ?: (string) config('neurocommerce.currency.default', 'NGN');
         $subtotalMoney = $cart->calculateSubtotal();
         $subtotal = $subtotalMoney->getFormattedAmount();
         $shipping = 0.0;
@@ -307,7 +309,7 @@ class CheckoutService extends AbstractService
                     subtotal: $subtotal,
                     cartItems: $cart->items()->with('product')->get(),
                     userId: $userId,
-                    currency: $cart->currency_code ?: 'USD'
+                    currency: $currency
                 );
 
                 if ($validation->isValid) {
@@ -332,7 +334,7 @@ class CheckoutService extends AbstractService
             'tax_amount' => $tax,
             'discount_amount' => $discount,
             'total_amount' => $total,
-            'currency_code' => $cart->currency_code ?: 'USD',
+            'currency_code' => $currency,
         ];
     }
 

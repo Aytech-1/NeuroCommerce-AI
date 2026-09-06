@@ -30,6 +30,28 @@ class RefundResource extends JsonResource
             'processed_at' => $this->processed_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
+            'payment' => new PaymentResource($this->whenLoaded('payment')),
+            'order' => $this->whenLoaded('order', function () {
+                return $this->order ? [
+                    'id' => $this->order->id,
+                    'order_number' => $this->order->order_number,
+                    'status' => $this->order->status?->value ?? (string) $this->order->status,
+                    'total_amount' => (float) $this->order->total_amount,
+                    'currency_code' => $this->order->currency_code,
+                    'user' => $this->order->user ? [
+                        'id' => $this->order->user->id,
+                        'name' => $this->order->user->name,
+                        'email' => $this->order->user->email,
+                    ] : null,
+                ] : null;
+            }),
+            'processor' => $this->whenLoaded('processor', function () {
+                return $this->processor ? [
+                    'id' => $this->processor->id,
+                    'name' => $this->processor->name,
+                    'email' => $this->processor->email,
+                ] : null;
+            }),
         ];
     }
 }

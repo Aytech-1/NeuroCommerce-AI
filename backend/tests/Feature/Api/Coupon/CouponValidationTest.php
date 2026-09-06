@@ -23,14 +23,14 @@ class CouponValidationTest extends TestCase
     {
         $response = $this->postJson('/api/v1/coupons/validate', [
             'code' => 'WELCOME10',
-            'subtotal' => 100.00,
+            'subtotal' => 100000.00,
         ]);
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.is_valid', true)
             ->assertJsonPath('data.code', 'WELCOME10')
-            ->assertJsonPath('data.discount_amount', fn ($val) => (float) $val === 10.0);
+            ->assertJsonPath('data.discount_amount', fn ($val) => (float) $val === 10000.0);
     }
 
     public function test_expired_coupon_returns_422_error(): void

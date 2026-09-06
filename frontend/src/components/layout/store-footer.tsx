@@ -240,19 +240,19 @@ export function StoreFooter() {
 
             <nav aria-label="Legal Navigation" className="flex items-center gap-6 font-medium">
               <Link
-                href="/products"
+                href="/privacy"
                 className="hover:text-blue-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm"
               >
                 Privacy Notice
               </Link>
               <Link
-                href="/products"
+                href="/terms"
                 className="hover:text-blue-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm"
               >
                 Terms of Service
               </Link>
               <Link
-                href="/products"
+                href="/security"
                 className="hover:text-blue-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm"
               >
                 Security Policy

@@ -43,6 +43,20 @@ class ProductVariantResource extends JsonResource
                     ];
                 });
             }),
+            'attribute_values' => $this->whenLoaded('attributeValues', function () {
+                return $this->attributeValues->map(function ($val) {
+                    return [
+                        'id' => $val->id,
+                        'value' => $val->value,
+                        'color_hex' => $val->color_hex,
+                        'attribute' => $val->attribute ? [
+                            'id' => $val->attribute->id,
+                            'name' => $val->attribute->name,
+                            'slug' => $val->attribute->slug,
+                        ] : null,
+                    ];
+                });
+            }),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

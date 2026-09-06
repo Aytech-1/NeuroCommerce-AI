@@ -19,4 +19,6 @@ interface InvoiceRepositoryInterface extends BaseRepositoryInterface
     public function findByInvoiceNumber(string $invoiceNumber): ?Invoice;
 
     public function generateInvoiceNumber(): string;
+
+    public function paginateForAdmin(array $filters = [], int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 }

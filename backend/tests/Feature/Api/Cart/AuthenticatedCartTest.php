@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->seed(DatabaseSeeder::class);
     $this->user = User::factory()->create();
     $this->product = Product::factory()->create([
-        'base_price' => 50.0,
+        'base_price' => 50000.0,
         'is_active' => true,
         'status' => 'active',
     ]);

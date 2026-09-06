@@ -115,8 +115,8 @@ describe("Featured Products / Product Showcase Suite", () => {
     // Product 1
     expect(screen.getByText(/Neural Hardware/i)).toBeInTheDocument();
     expect(screen.getByText("NeuroTech EEG Headset Pro")).toBeInTheDocument();
-    expect(screen.getByText("$1,249.00")).toBeInTheDocument();
-    expect(screen.getByText("$1,499.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,249.00")).toBeInTheDocument();
+    expect(screen.getByText("₦1,499.00")).toBeInTheDocument();
     expect(screen.getByText("In Stock")).toBeInTheDocument();
     expect(screen.getAllByText("Featured").length).toBeGreaterThanOrEqual(1);
 

@@ -4,6 +4,7 @@ import {
   PublicProductQueryParams,
 } from "@/services/storefront-service";
 import { useCartStore } from "@/stores/cart-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { toast } from "sonner";
 
 export const STOREFRONT_QUERY_KEYS = {
@@ -26,8 +27,13 @@ export const STOREFRONT_QUERY_KEYS = {
   reviews: (productId: string, params: { page?: number; per_page?: number }) =>
     ["storefront", "product", productId, "reviews", params] as const,
   trending: (limit: number) => ["storefront", "recommendations", "trending", limit] as const,
+  personalized: (limit: number) => ["storefront", "recommendations", "personalized", limit] as const,
   similar: (productId: string, limit: number) =>
     ["storefront", "recommendations", "similar", productId, limit] as const,
+  crossSell: (cartProductIds: string[], limit: number) =>
+    ["storefront", "recommendations", "cross-sell", cartProductIds, limit] as const,
+  recentlyViewed: (limit: number) =>
+    ["storefront", "recommendations", "recently-viewed", limit] as const,
 };
 
 export function usePublicProducts(params: PublicProductQueryParams = {}) {
@@ -166,6 +172,59 @@ export function useTrendingRecommendations(limit = 8) {
   });
 }
 
+export function usePersonalizedRecommendations(limit = 8) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  return useQuery({
+    queryKey: STOREFRONT_QUERY_KEYS.personalized(limit),
+    queryFn: () => storefrontService.getPersonalizedRecommendations(limit),
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useCrossSellRecommendations(cartProductIds: string[] = [], limit = 5) {
+  return useQuery({
+    queryKey: STOREFRONT_QUERY_KEYS.crossSell(cartProductIds, limit),
+    queryFn: () => storefrontService.getCrossSellRecommendations(cartProductIds, limit),
+    enabled: cartProductIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useRecentlyViewedRecommendations(limit = 10) {
+  return useQuery({
+    queryKey: STOREFRONT_QUERY_KEYS.recentlyViewed(limit),
+    queryFn: () => storefrontService.getRecentlyViewedRecommendations(limit),
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useSmartRecommendations(limit = 8) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  return useQuery({
+    queryKey: isAuthenticated
+      ? STOREFRONT_QUERY_KEYS.personalized(limit)
+      : STOREFRONT_QUERY_KEYS.trending(limit),
+    queryFn: async () => {
+      if (isAuthenticated) {
+        try {
+          const personalized = await storefrontService.getPersonalizedRecommendations(limit);
+          if (personalized && personalized.length > 0) {
+            return { items: personalized, isPersonalized: true };
+          }
+        } catch (e) {
+          // Graceful fallback to trending on any personalized query failure
+        }
+      }
+      const trending = await storefrontService.getTrendingRecommendations(limit);
+      return { items: trending || [], isPersonalized: false };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useSimilarRecommendations(productId: string, limit = 4) {
   return useQuery({
     queryKey: STOREFRONT_QUERY_KEYS.similar(productId, limit),
@@ -216,6 +275,24 @@ export function useToggleWishlist() {
     },
     onError: () => {
       toast.error("Please sign in to save items to your wishlist.");
+    },
+  });
+}
+
+export function useSubmitReview(productId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { rating: number; title?: string; body?: string; images?: string[] }) =>
+      storefrontService.submitProductReview(productId, payload),
+    onSuccess: () => {
+      toast.success("Review submitted! It will be published after moderation.");
+      queryClient.invalidateQueries({ queryKey: ["storefront", "product", productId, "reviews"] });
+    },
+    onError: (err: unknown) => {
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+      const msg = errorObj?.response?.data?.message || errorObj?.message || "Failed to submit review. Please try again.";
+      toast.error(msg);
     },
   });
 }

@@ -7,6 +7,19 @@ import { useCategories, useBrands } from "@/hooks/use-catalog";
 vi.mock("@/hooks/use-catalog", () => ({
   useCategories: vi.fn(),
   useBrands: vi.fn(),
+  useCreateCategory: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateCategory: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteCategory: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCreateBrand: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateBrand: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteBrand: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock("@/hooks/use-brands", () => ({
+  useBrands: vi.fn(),
+  useCreateBrand: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateBrand: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteBrand: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 vi.mock("@tanstack/react-query", () => ({
@@ -17,7 +30,7 @@ vi.mock("@tanstack/react-query", () => ({
 
 describe("Admin Categories and Brands Suite", () => {
   it("renders categories table with active status", () => {
-    vi.mocked(useCategories).mockReturnValue({
+    const mockCatData = {
       data: [
         {
           id: "cat-1",
@@ -30,13 +43,15 @@ describe("Admin Categories and Brands Suite", () => {
       ],
       isLoading: false,
       isError: false,
-    } as any);
+    };
+
+    vi.mocked(useCategories).mockReturnValue(mockCatData as any);
 
     render(<AdminCategoriesPage />);
 
     expect(screen.getByText("Smart Wearables")).toBeInTheDocument();
     expect(screen.getByText("smart-wearables")).toBeInTheDocument();
-    expect(screen.getByText("14")).toBeInTheDocument();
+    expect(screen.getAllByText("14").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Active")).toBeInTheDocument();
   });
 
@@ -60,7 +75,7 @@ describe("Admin Categories and Brands Suite", () => {
 
     expect(screen.getByText("NeuroCore Dynamics")).toBeInTheDocument();
     expect(screen.getByText("https://neurocore.ai")).toBeInTheDocument();
-    expect(screen.getByText("28")).toBeInTheDocument();
+    expect(screen.getAllByText("28").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Active")).toBeInTheDocument();
   });
 });

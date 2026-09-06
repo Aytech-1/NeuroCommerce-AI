@@ -51,9 +51,9 @@ describe("StoreFooter & Site-Wide Navigation Suite", () => {
 
     expect(screen.getByText(/© 2026 NeuroCommerce\. All rights reserved\./i)).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /legal navigation/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /^privacy notice$/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /^terms of service$/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /^security policy$/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^privacy notice$/i })).toHaveAttribute("href", "/privacy");
+    expect(screen.getByRole("link", { name: /^terms of service$/i })).toHaveAttribute("href", "/terms");
+    expect(screen.getByRole("link", { name: /^security policy$/i })).toHaveAttribute("href", "/security");
   });
 
   it("5. Accessibility: verifies semantic footer tag and aria-hidden on decorative SVGs", () => {

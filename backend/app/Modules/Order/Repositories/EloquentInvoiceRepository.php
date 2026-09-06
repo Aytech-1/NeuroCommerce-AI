@@ -54,4 +54,35 @@ class EloquentInvoiceRepository extends AbstractRepository implements InvoiceRep
 
         return $invNumber;
     }
+
+    public function paginateForAdmin(array $filters = [], int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = $this->model->newQuery()
+            ->with(['order.user', 'order.items', 'order.billingAddress', 'order.shippingAddress'])
+            ->orderBy('created_at', 'desc');
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['currency_code'])) {
+            $query->where('currency_code', $filters['currency_code']);
+        }
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_number', 'LIKE', "%{$search}%")
+                    ->orWhereHas('order', function ($oq) use ($search) {
+                        $oq->where('order_number', 'LIKE', "%{$search}%")
+                            ->orWhereHas('user', function ($uq) use ($search) {
+                                $uq->where('name', 'LIKE', "%{$search}%")
+                                    ->orWhere('email', 'LIKE', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        return $query->paginate($perPage);
+    }
 }

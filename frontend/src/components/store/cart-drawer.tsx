@@ -77,9 +77,9 @@ export function CartDrawer() {
                 <div key={item.id} className="flex gap-4 pt-4 first:pt-0">
                   {/* Thumbnail */}
                   <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[#F8FAFC] border border-slate-200 p-2 flex items-center justify-center">
-                    {item.product?.primary_image?.url ? (
+                    {item.product?.primary_image_url || item.product?.primary_image?.url || (item.product as any)?.images?.[0]?.url ? (
                       <img
-                        src={item.product.primary_image.url}
+                        src={item.product?.primary_image_url || item.product?.primary_image?.url || (item.product as any)?.images?.[0]?.url}
                         alt={item.product.name}
                         className="h-full w-full object-contain"
                       />

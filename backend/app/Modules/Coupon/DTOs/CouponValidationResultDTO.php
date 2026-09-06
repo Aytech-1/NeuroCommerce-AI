@@ -30,7 +30,7 @@ class CouponValidationResultDTO extends AbstractDTO
         string $code,
         string $type,
         float $discountAmount,
-        string $currency = 'USD'
+        ?string $currency = null
     ): self {
         return new self(
             isValid: true,
@@ -38,11 +38,11 @@ class CouponValidationResultDTO extends AbstractDTO
             code: $code,
             type: $type,
             discountAmount: $discountAmount,
-            currency: $currency,
+            currency: $currency ?? (string) config('neurocommerce.currency.default', 'NGN'),
         );
     }
 
-    public static function invalid(string $message, string $code = 'INVALID_COUPON'): self
+    public static function invalid(string $message, string $code = 'INVALID_COUPON', ?string $currency = null): self
     {
         return new self(
             isValid: false,
@@ -50,7 +50,7 @@ class CouponValidationResultDTO extends AbstractDTO
             code: null,
             type: null,
             discountAmount: 0.0,
-            currency: 'USD',
+            currency: $currency ?? (string) config('neurocommerce.currency.default', 'NGN'),
             errorMessage: $message,
             errorCode: $code,
         );

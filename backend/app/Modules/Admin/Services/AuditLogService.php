@@ -25,15 +25,19 @@ class AuditLogService
         ?string $userId = null,
         ?string $ipAddress = null,
         ?string $userAgent = null,
-        ?array $tags = null
+        ?array $tags = null,
+        ?string $userType = null,
+        ?string $url = null
     ): AuditLog {
         return AuditLog::create([
             'user_id' => $userId,
+            'user_type' => $userType,
             'event' => $event,
             'auditable_type' => $auditableType,
             'auditable_id' => $auditableId,
             'old_values' => $oldValues,
             'new_values' => $newValues,
+            'url' => $url,
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
             'tags' => $tags,
@@ -60,6 +64,21 @@ class AuditLogService
     {
         $query = AuditLog::query()->with('user:id,first_name,last_name,email')->latest('created_at');
 
+        if (!empty($filters['search'])) {
+            $search = (string) $filters['search'];
+            $query->where(function (Builder $q) use ($search) {
+                $q->where('event', 'like', "%{$search}%")
+                    ->orWhere('auditable_type', 'like', "%{$search}%")
+                    ->orWhere('auditable_id', 'like', "%{$search}%")
+                    ->orWhere('ip_address', 'like', "%{$search}%")
+                    ->orWhereHas('user', function (Builder $userQuery) use ($search) {
+                        $userQuery->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
+            });
+        }
+
         if (!empty($filters['event'])) {
             $query->where('event', $filters['event']);
         }
@@ -69,7 +88,7 @@ class AuditLogService
         }
 
         if (!empty($filters['auditable_type'])) {
-            $query->where('auditable_type', $filters['auditable_type']);
+            $query->where('auditable_type', 'like', "%{$filters['auditable_type']}%");
         }
 
         if (!empty($filters['auditable_id'])) {

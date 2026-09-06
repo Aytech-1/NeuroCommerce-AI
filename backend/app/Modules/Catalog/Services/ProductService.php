@@ -297,6 +297,7 @@ class ProductService extends AbstractService
     {
         $uploaded = [];
         $fileList = is_array($files) ? $files : [$files];
+        $hasPrimary = ProductImage::where('product_id', $productId)->where('is_primary', true)->exists();
 
         foreach ($fileList as $index => $file) {
             if (!$file instanceof UploadedFile) {
@@ -307,12 +308,18 @@ class ProductService extends AbstractService
             $path = $file->storeAs('products/' . $productId, $filename, 'public');
             $url = Storage::disk('public')->url($path);
 
+            $shouldBePrimary = ($index === 0 && $isPrimary) || (!$hasPrimary && $index === 0);
+
             $image = $this->productRepository->addImage($productId, [
                 'url' => $url,
                 'alt_text' => $altText,
-                'is_primary' => $index === 0 && $isPrimary,
+                'is_primary' => $shouldBePrimary,
                 'sort_order' => $index,
             ]);
+
+            if ($shouldBePrimary) {
+                $hasPrimary = true;
+            }
 
             $uploaded[] = $image;
         }

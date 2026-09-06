@@ -130,11 +130,11 @@ export function ProductCard({ product, rating = 4.8, reviewsCount }: ProductCard
           {/* Pricing Row */}
           <div className="flex items-baseline gap-2">
             <span className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-              {formatCurrency(price)}
+              {formatCurrency(price, product.currency_code)}
             </span>
             {isOnSale && (
               <span className="text-xs sm:text-sm text-slate-400 line-through">
-                {formatCurrency(product.base_price)}
+                {formatCurrency(product.base_price, product.currency_code)}
               </span>
             )}
           </div>
