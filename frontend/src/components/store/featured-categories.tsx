@@ -12,100 +12,113 @@ import {
   Activity,
   Radio,
   Layers,
+  Headphones,
+  Smartphone,
+  Monitor,
+  Laptop,
+  Shirt,
+  Home,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCategoriesTree } from "@/hooks/use-storefront";
 
-interface StaticCategoryConfig {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  defaultCount: string;
+import { CategoryItem } from "@/services/catalog-service";
+
+type ArtworkType = "neural" | "medical" | "wearable" | "laboratory" | "accessories" | "new_arrivals";
+
+interface CategoryPresentation {
   icon: typeof BrainCircuit;
-  artworkType: "neural" | "medical" | "wearable" | "laboratory" | "accessories" | "new_arrivals";
+  artworkType: ArtworkType;
+  defaultDescription: string;
 }
 
-const FEATURED_CATEGORY_CONFIGS: StaticCategoryConfig[] = [
-  {
-    id: "cat-neural-hardware",
-    title: "Neural Hardware",
-    slug: "neural-headsets",
-    description: "Advanced neural interfaces and brain-computer technology.",
-    defaultCount: "120+ Products",
+// Presentation mapping keyed by category slug/keyword for visual consistency
+function getCategoryPresentation(slug: string, name: string): CategoryPresentation {
+  const s = slug.toLowerCase();
+  const n = name.toLowerCase();
+
+  if (s.includes("wearable") || n.includes("wearable") || n.includes("watch")) {
+    return {
+      icon: Watch,
+      artworkType: "wearable",
+      defaultDescription: "Smart wearables for health telemetry, vitals, and performance tracking.",
+    };
+  }
+  if (s.includes("audio") || s.includes("headphone") || n.includes("audio") || n.includes("headphone")) {
+    return {
+      icon: Headphones,
+      artworkType: "neural",
+      defaultDescription: "High-fidelity audio systems, neural headsets, and precision acoustics.",
+    };
+  }
+  if (s.includes("smartphone") || s.includes("tablet") || n.includes("phone") || n.includes("tablet")) {
+    return {
+      icon: Smartphone,
+      artworkType: "medical",
+      defaultDescription: "Flagship mobile devices, neural interfaces, and connected tablets.",
+    };
+  }
+  if (s.includes("monitor") || s.includes("display") || n.includes("monitor") || n.includes("display")) {
+    return {
+      icon: Monitor,
+      artworkType: "medical",
+      defaultDescription: "Ultra-sharp 4K displays, creative monitors, and studio screens.",
+    };
+  }
+  if (s.includes("accessory") || s.includes("accessories") || s.includes("cable") || n.includes("accessory") || n.includes("accessories")) {
+    return {
+      icon: Cable,
+      artworkType: "accessories",
+      defaultDescription: "High-speed USB hubs, docking stations, and workspace peripherals.",
+    };
+  }
+  if (s.includes("laptop") || s.includes("computer") || n.includes("laptop") || n.includes("computer")) {
+    return {
+      icon: Laptop,
+      artworkType: "laboratory",
+      defaultDescription: "High-performance laptops, workstations, and computational hardware.",
+    };
+  }
+  if (s.includes("clothing") || s.includes("apparel") || s.includes("fashion") || n.includes("clothing") || n.includes("apparel")) {
+    return {
+      icon: Shirt,
+      artworkType: "new_arrivals",
+      defaultDescription: "Technical athletic wear, performance apparel, and modern essentials.",
+    };
+  }
+  if (s.includes("home") || s.includes("living") || s.includes("appliance") || n.includes("home") || n.includes("appliance")) {
+    return {
+      icon: Home,
+      artworkType: "laboratory",
+      defaultDescription: "Smart living systems, home automation, and modern appliances.",
+    };
+  }
+
+  return {
     icon: BrainCircuit,
     artworkType: "neural",
-  },
-  {
-    id: "cat-medical-devices",
-    title: "Medical Devices",
-    slug: "clinical-telemetry",
-    description: "Clinical-grade devices and equipment for precise outcomes.",
-    defaultCount: "85+ Products",
-    icon: HeartPulse,
-    artworkType: "medical",
-  },
-  {
-    id: "cat-wearables",
-    title: "Wearables",
-    slug: "wearables",
-    description: "Smart wearables for health monitoring and performance tracking.",
-    defaultCount: "65+ Products",
-    icon: Watch,
-    artworkType: "wearable",
-  },
-  {
-    id: "cat-laboratory-equipment",
-    title: "Laboratory Equipment",
-    slug: "laboratory-equipment",
-    description: "High-precision laboratory instruments for research and analysis.",
-    defaultCount: "95+ Products",
-    icon: FlaskConical,
-    artworkType: "laboratory",
-  },
-  {
-    id: "cat-accessories",
-    title: "Accessories & Components",
-    slug: "accessories",
-    description: "Essential accessories and components to power your devices.",
-    defaultCount: "200+ Products",
-    icon: Cable,
-    artworkType: "accessories",
-  },
-  {
-    id: "cat-new-arrivals",
-    title: "New Arrivals",
-    slug: "new-arrivals",
-    description: "Latest innovations and newly added products you'll love.",
-    defaultCount: "50+ Products",
-    icon: Sparkles,
-    artworkType: "new_arrivals",
-  },
-];
+    defaultDescription: "Advanced technology, intelligent devices, and research hardware.",
+  };
+}
 
-function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }) {
+function CategoryArtwork({ type }: { type: ArtworkType }) {
   switch (type) {
     case "neural":
       return (
         <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center shrink-0">
-          {/* Ambient circular backdrop */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-50 via-cyan-50 to-blue-100/60 border border-blue-100/80" />
-          
-          {/* Headset Arc */}
           <div className="relative z-10 w-20 h-20 flex items-center justify-center">
             <div className="absolute inset-x-2 top-1 h-14 rounded-t-full border-[5px] border-slate-800 bg-transparent" />
             <div className="absolute top-2 inset-x-0 mx-auto w-10 py-0.5 text-center bg-slate-900 text-white rounded text-[5px] font-bold tracking-wider uppercase">
               Neuro
             </div>
-            {/* Ear cups */}
             <div className="absolute bottom-3 left-1 w-5 h-8 rounded-lg bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-300 shadow-md flex items-center justify-center transform -rotate-12">
               <div className="w-2 h-4 rounded-sm bg-slate-900" />
             </div>
             <div className="absolute bottom-3 right-1 w-5 h-8 rounded-lg bg-gradient-to-b from-slate-100 to-slate-200 border border-slate-300 shadow-md flex items-center justify-center transform rotate-12">
               <div className="w-2 h-4 rounded-sm bg-slate-900" />
             </div>
-            {/* Device Hub */}
             <div className="absolute -bottom-1 inset-x-3 h-7 rounded-xl bg-white border border-slate-200 shadow-md flex items-center justify-between px-2">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
               <div className="w-6 h-0.5 bg-blue-500 rounded-full" />
@@ -119,7 +132,6 @@ function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }
       return (
         <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center shrink-0">
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-sky-50 via-blue-50 to-indigo-50 border border-blue-100/80" />
-          {/* Clinical Telemetry Monitor */}
           <div className="relative z-10 w-22 h-18 rounded-2xl bg-white border-2 border-slate-200 shadow-lg p-1.5 flex flex-col justify-between">
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-1">
@@ -128,7 +140,6 @@ function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }
               </div>
               <span className="text-[6px] font-mono text-blue-600 font-bold">98%</span>
             </div>
-            {/* Graph display */}
             <div className="h-7 bg-slate-950 rounded-lg p-1 flex items-center">
               <svg className="w-full h-full text-cyan-400" viewBox="0 0 80 20" fill="none">
                 <path
@@ -139,7 +150,6 @@ function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }
                 />
               </svg>
             </div>
-            {/* Dials & ports */}
             <div className="flex items-center justify-between px-1">
               <div className="flex gap-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
@@ -155,17 +165,13 @@ function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }
       return (
         <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center shrink-0">
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-50 via-blue-50 to-slate-100 border border-blue-100/80" />
-          {/* Smartwatch */}
           <div className="relative z-10 w-16 h-22 flex flex-col items-center">
-            {/* Top Strap */}
             <div className="w-8 h-4 rounded-t-md bg-slate-800" />
-            {/* Watch Face */}
             <div className="w-14 h-15 rounded-2xl bg-slate-950 border-2 border-slate-800 shadow-xl p-1.5 flex flex-col justify-between my-0.5">
               <div className="flex items-center justify-between text-[6px] text-slate-400 font-mono">
                 <span className="text-white font-bold">EEG</span>
                 <span className="text-cyan-400">SYNC</span>
               </div>
-              {/* Brain graph */}
               <div className="my-auto text-center">
                 <svg className="w-full h-3 text-cyan-400" viewBox="0 0 50 15" fill="none">
                   <path d="M0 8 Q 10 2, 20 8 T 35 3 T 50 8" stroke="currentColor" strokeWidth="1.5" />
@@ -174,7 +180,6 @@ function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }
               </div>
               <div className="text-[5px] text-slate-400 text-center uppercase tracking-wider">LIVE</div>
             </div>
-            {/* Bottom Strap */}
             <div className="w-8 h-4 rounded-b-md bg-slate-800" />
           </div>
         </div>
@@ -184,18 +189,13 @@ function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }
       return (
         <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center shrink-0">
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-indigo-50 via-blue-50 to-cyan-50 border border-blue-100/80" />
-          {/* Microscope Vector */}
           <div className="relative z-10 w-18 h-22 flex flex-col items-center justify-between p-1">
-            {/* Eyepiece */}
             <div className="w-4 h-5 rounded-t bg-slate-800 transform -rotate-12" />
-            {/* Arm & Objective */}
             <div className="relative w-12 h-10 flex items-center justify-center">
               <div className="w-3 h-8 bg-slate-900 rounded-sm transform rotate-6" />
               <div className="w-4 h-3 bg-cyan-500 rounded-xs absolute right-2 top-4" />
             </div>
-            {/* Stage */}
             <div className="w-14 h-2 bg-slate-700 rounded-xs shadow-xs" />
-            {/* Base */}
             <div className="w-16 h-3.5 bg-gradient-to-r from-slate-100 via-white to-slate-200 rounded-lg border border-slate-300 shadow-md flex items-center justify-center">
               <div className="w-3 h-1 rounded-full bg-blue-500" />
             </div>
@@ -207,13 +207,10 @@ function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }
       return (
         <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center shrink-0">
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-slate-50 via-blue-50 to-cyan-50 border border-blue-100/80" />
-          {/* Precision Cables & Sensor Lead */}
           <div className="relative z-10 w-22 h-20 flex flex-col items-center justify-center">
-            {/* Cable coil */}
             <div className="w-16 h-10 rounded-full border-4 border-slate-800 bg-transparent shadow-sm flex items-center justify-center transform rotate-12">
               <div className="w-10 h-5 rounded-full border-2 border-slate-600" />
             </div>
-            {/* Connector Base & Sensor Pad */}
             <div className="flex items-center gap-2 mt-1">
               <div className="w-8 h-4 rounded-md bg-white border border-slate-300 shadow-xs flex items-center justify-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
@@ -230,16 +227,11 @@ function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }
       return (
         <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center shrink-0">
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-50/50 via-blue-50 to-cyan-50 border border-blue-100/80" />
-          {/* Presentation Box with Floating Confetti */}
           <div className="relative z-10 w-20 h-20 flex flex-col items-center justify-center">
-            {/* Confetti particles */}
             <span className="absolute top-1 left-2 w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce" />
             <span className="absolute top-3 right-2 w-1 h-1 rounded-full bg-cyan-400" />
             <span className="absolute bottom-2 left-1 w-1 h-1 rounded-full bg-amber-400" />
-            
-            {/* Box Open Lid */}
             <div className="w-16 h-5 bg-slate-100 border border-slate-300 rounded-t-lg transform -rotate-6 shadow-xs" />
-            {/* Box Body */}
             <div className="w-18 h-12 bg-white border border-slate-200 rounded-b-xl shadow-lg p-1.5 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[6px] font-black text-blue-600 uppercase">Neuro</span>
@@ -247,7 +239,7 @@ function CategoryArtwork({ type }: { type: StaticCategoryConfig["artworkType"] }
               </div>
               <div className="w-8 h-1 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full mx-auto" />
               <div className="text-[5px] font-bold text-slate-400 text-center uppercase tracking-wider">
-                New Tech
+                Certified
               </div>
             </div>
           </div>
@@ -280,21 +272,23 @@ export function FeaturedCategories() {
     );
   }
 
-  // Map API categories with matching slugs if present, falling back to static config counts
-  const categoryCards = FEATURED_CATEGORY_CONFIGS.map((config) => {
-    const matched = apiCategories?.find(
-      (c) => c.slug === config.slug || c.name.toLowerCase().includes(config.title.toLowerCase())
-    );
+  // Extract all valid categories (children first if available, otherwise root) to showcase up to 6 real categories
+  const extractedCategories: CategoryItem[] = [];
+  if (apiCategories && Array.isArray(apiCategories)) {
+    // Collect child categories which are specific and granular
+    for (const rootCat of apiCategories) {
+      if (rootCat.children && rootCat.children.length > 0) {
+        for (const child of rootCat.children) {
+          extractedCategories.push(child);
+        }
+      } else {
+        extractedCategories.push(rootCat);
+      }
+    }
+  }
 
-    return {
-      ...config,
-      slug: matched?.slug || config.slug,
-      productCount:
-        matched?.products_count !== undefined
-          ? `${matched.products_count}+ Products`
-          : config.defaultCount,
-    };
-  });
+  // Showcase up to 6 active categories
+  const displayCategories = extractedCategories.slice(0, 6);
 
   return (
     <section
@@ -331,7 +325,7 @@ export function FeaturedCategories() {
         </div>
 
         {/* ======================================================================= */}
-        {/* CATEGORY GRID: 3 cols desktop, 2 cols tablet, 1 col mobile              */}
+        {/* CATEGORY GRID                                                           */}
         {/* ======================================================================= */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
@@ -339,10 +333,28 @@ export function FeaturedCategories() {
               <Skeleton key={i} className="h-[220px] sm:h-[240px] rounded-[20px]" />
             ))}
           </div>
+        ) : displayCategories.length === 0 ? (
+          <div className="p-8 rounded-3xl border border-slate-200 bg-white text-center">
+            <h3 className="text-base font-bold text-slate-900">Categories are currently being indexed.</h3>
+            <p className="text-xs text-slate-500 mt-1">Browse our complete product catalog.</p>
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-1.5 mt-4 text-xs font-bold text-blue-600 hover:text-blue-700"
+            >
+              <span>Explore All Products</span>
+              <span>→</span>
+            </Link>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {categoryCards.map((category) => {
-              const IconComponent = category.icon;
+            {displayCategories.map((category) => {
+              const presentation = getCategoryPresentation(category.slug, category.name);
+              const IconComponent = presentation.icon;
+
+              const countLabel =
+                category.products_count !== undefined && category.products_count > 0
+                  ? `${category.products_count} Product${category.products_count === 1 ? "" : "s"}`
+                  : "Explore Category";
 
               return (
                 <Link
@@ -360,19 +372,19 @@ export function FeaturedCategories() {
 
                       {/* Title */}
                       <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">
-                        {category.title}
+                        {category.name}
                       </h3>
 
                       {/* Description */}
                       <p className="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
-                        {category.description}
+                        {category.description || presentation.defaultDescription}
                       </p>
                     </div>
 
                     {/* Count and CTA */}
                     <div className="mt-4 pt-2">
                       <span className="text-xs font-bold text-blue-600 block">
-                        {category.productCount}
+                        {countLabel}
                       </span>
                       <div className="flex items-center gap-1 text-xs font-bold text-slate-700 group-hover:text-blue-600 mt-1 transition-colors">
                         <span>Explore Category</span>
@@ -382,7 +394,7 @@ export function FeaturedCategories() {
                   </div>
 
                   {/* Right Device Visual Column */}
-                  <CategoryArtwork type={category.artworkType} />
+                  <CategoryArtwork type={presentation.artworkType} />
                 </Link>
               );
             })}

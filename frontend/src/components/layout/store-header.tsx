@@ -94,7 +94,7 @@ export function StoreHeader() {
               <div className="flex items-center gap-1.5 text-slate-600 font-medium">
                 <Truck className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                 <span>
-                  Free shipping on orders over <strong className="text-slate-900">$500</strong>
+                  Free shipping on orders over <strong className="text-slate-900">₦50,000</strong>
                 </span>
               </div>
               <div className="h-3 w-px bg-slate-200" />
@@ -175,13 +175,18 @@ export function StoreHeader() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="bg-transparent py-1.5 pr-6 pl-2 text-xs font-semibold text-slate-600 hover:text-slate-900 focus:outline-none cursor-pointer appearance-none"
+                    className="bg-transparent py-1.5 pr-6 pl-2 text-xs font-semibold text-slate-600 hover:text-slate-900 focus:outline-none cursor-pointer appearance-none max-w-[140px] truncate"
                   >
                     <option value="all">All Categories</option>
                     {categories?.map((cat) => (
-                      <option key={cat.id} value={cat.slug}>
-                        {cat.name}
-                      </option>
+                      <optgroup key={cat.id} label={cat.name}>
+                        <option value={cat.slug}>{cat.name}</option>
+                        {cat.children?.map((child) => (
+                          <option key={child.id} value={child.slug}>
+                            &nbsp;&nbsp;{child.name}
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
@@ -289,26 +294,46 @@ export function StoreHeader() {
 
                 {/* Floating Categories Mega Dropdown */}
                 {allCategoriesOpen && (
-                  <div className="absolute left-0 top-full mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl z-50 animate-in fade-in-50 zoom-in-95">
+                  <div className="absolute left-0 top-full mt-2 w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl z-50 animate-in fade-in-50 zoom-in-95 max-h-[480px] overflow-y-auto">
                     <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1.5">
-                      Hardware Categories
+                      Store Categories
                     </div>
-                    <div className="space-y-1 mt-1">
+                    <div className="space-y-3 mt-1">
                       {categories && categories.length > 0 ? (
                         categories.map((cat) => (
-                          <Link
-                            key={cat.id}
-                            href={`/category/${cat.slug}`}
-                            onClick={() => setAllCategoriesOpen(false)}
-                            className="flex items-center justify-between px-3 py-2 text-xs font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-colors"
-                          >
-                            <span>{cat.name}</span>
-                            {cat.products_count !== undefined && (
-                              <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">
-                                {cat.products_count}
-                              </span>
+                          <div key={cat.id} className="space-y-1">
+                            <Link
+                              href={`/category/${cat.slug}`}
+                              onClick={() => setAllCategoriesOpen(false)}
+                              className="flex items-center justify-between px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-colors"
+                            >
+                              <span>{cat.name}</span>
+                              {cat.products_count !== undefined && cat.products_count > 0 && (
+                                <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md font-semibold">
+                                  {cat.products_count}
+                                </span>
+                              )}
+                            </Link>
+                            {cat.children && cat.children.length > 0 && (
+                              <div className="pl-3 space-y-0.5 border-l-2 border-slate-100 ml-3">
+                                {cat.children.map((child) => (
+                                  <Link
+                                    key={child.id}
+                                    href={`/category/${child.slug}`}
+                                    onClick={() => setAllCategoriesOpen(false)}
+                                    className="flex items-center justify-between px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-lg transition-colors"
+                                  >
+                                    <span>{child.name}</span>
+                                    {child.products_count !== undefined && child.products_count > 0 && (
+                                      <span className="text-[9px] text-slate-400">
+                                        {child.products_count}
+                                      </span>
+                                    )}
+                                  </Link>
+                                ))}
+                              </div>
                             )}
-                          </Link>
+                          </div>
                         ))
                       ) : (
                         <div className="px-3 py-2 text-xs text-slate-400">Loading categories...</div>
@@ -359,24 +384,40 @@ export function StoreHeader() {
                   </button>
 
                   {categoriesDropdownOpen && (
-                    <div className="absolute left-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl z-50 animate-in fade-in-50">
-                      {categories?.slice(0, 6).map((cat) => (
-                        <Link
-                          key={cat.id}
-                          href={`/category/${cat.slug}`}
-                          onClick={() => setCategoriesDropdownOpen(false)}
-                          className="block px-3 py-2 text-xs font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-colors"
-                        >
-                          {cat.name}
-                        </Link>
+                    <div className="absolute left-0 top-full mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xl z-50 animate-in fade-in-50 max-h-[420px] overflow-y-auto">
+                      {categories?.map((cat) => (
+                        <div key={cat.id} className="mb-2 last:mb-0">
+                          <Link
+                            key={cat.id}
+                            href={`/category/${cat.slug}`}
+                            onClick={() => setCategoriesDropdownOpen(false)}
+                            className="block px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-colors"
+                          >
+                            {cat.name}
+                          </Link>
+                          {cat.children && cat.children.length > 0 && (
+                            <div className="pl-3 space-y-0.5 mt-0.5">
+                              {cat.children.map((child) => (
+                                <Link
+                                  key={child.id}
+                                  href={`/category/${child.slug}`}
+                                  onClick={() => setCategoriesDropdownOpen(false)}
+                                  className="block px-2 py-1 text-[11px] font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-lg transition-colors"
+                                >
+                                  {child.name}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       ))}
-                      <div className="border-t border-slate-100 mt-1 pt-1">
+                      <div className="border-t border-slate-100 mt-2 pt-1.5">
                         <Link
                           href="/categories"
                           onClick={() => setCategoriesDropdownOpen(false)}
-                          className="block px-3 py-1.5 text-xs font-bold text-blue-600 hover:underline"
+                          className="block px-3 py-1 text-xs font-bold text-blue-600 hover:underline text-center"
                         >
-                          Browse All →
+                          Browse All Categories →
                         </Link>
                       </div>
                     </div>

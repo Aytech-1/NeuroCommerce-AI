@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { use, useState } from "react";
 import Link from "next/link";
@@ -34,6 +34,7 @@ export default function CategoryProductsPage({
     data: category,
     isLoading: catLoading,
     isError: catError,
+    error: catErrorObj,
     refetch: refetchCategory,
   } = useCategoryBySlug(slug);
 
@@ -78,6 +79,9 @@ export default function CategoryProductsPage({
   // Determine if category is completely empty vs filtered empty
   const isUnfilteredEmpty = !hasActiveFilters && total === 0;
 
+  // Check if error is a 404 Not Found
+  const isNotFound = (catErrorObj as { response?: { status?: number } })?.response?.status === 404;
+
   // Full page error state when category fails to load
   if (catError && !category) {
     return (
@@ -104,23 +108,35 @@ export default function CategoryProductsPage({
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 mb-4">
               <Layers className="h-6 w-6" aria-hidden="true" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900">Unable to load category</h1>
+            <h1 className="text-xl font-bold text-slate-900">
+              {isNotFound ? "Category Not Found" : "Unable to load category"}
+            </h1>
             <p className="text-xs text-slate-500 mt-1.5 max-w-md mx-auto">
-              We couldn&apos;t load details for this category. Please check your connection or try again.
+              {isNotFound
+                ? `The category "${slug}" could not be found or may have been renamed. Browse our complete category directory to discover certified hardware.`
+                : "We couldn't load details for this category. Please check your connection or try again."}
             </p>
             <div className="flex items-center justify-center gap-3 mt-6">
-              <button
-                onClick={handleRetry}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-xs font-bold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
-              >
-                <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Retry</span>
-              </button>
+              {!isNotFound && (
+                <button
+                  onClick={handleRetry}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-xs font-bold text-white shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>Retry</span>
+                </button>
+              )}
               <Link
                 href="/categories"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-colors"
+              >
+                <span>Explore All Categories</span>
+              </Link>
+              <Link
+                href="/products"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
               >
-                <span>All Categories</span>
+                <span>Browse All Products</span>
               </Link>
             </div>
           </div>

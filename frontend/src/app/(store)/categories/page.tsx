@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import {
@@ -17,6 +17,7 @@ import { Container } from "@/components/ui/container";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useCategoriesTree } from "@/hooks/use-storefront";
+import { CategoryItem } from "@/services/catalog-service";
 
 // Deterministic icon selector for category visual badges
 function getCategoryIcon(name: string, index: number) {
@@ -34,7 +35,20 @@ function getCategoryIcon(name: string, index: number) {
 export default function CategoriesDirectoryPage() {
   const { data: categories, isLoading, isError, refetch } = useCategoriesTree();
 
-  const totalCategories = categories?.length ?? 0;
+  // Extract all categories (root plus children) so entire store hierarchy is discoverable
+  const allCategories: CategoryItem[] = [];
+  if (categories && Array.isArray(categories)) {
+    for (const cat of categories) {
+      allCategories.push(cat);
+      if (cat.children && cat.children.length > 0) {
+        for (const child of cat.children) {
+          allCategories.push(child);
+        }
+      }
+    }
+  }
+
+  const totalCategories = allCategories.length > 0 ? allCategories.length : (categories?.length ?? 0);
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen py-8 sm:py-12">

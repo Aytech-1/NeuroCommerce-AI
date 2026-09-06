@@ -31,7 +31,8 @@ class EloquentCategoryRepository extends AbstractRepository implements CategoryR
     {
         return $this->model->newQuery()
             ->where('slug', $slug)
-            ->with(['parent', 'children'])
+            ->withCount('products')
+            ->with(['parent', 'children' => fn ($q) => $q->active()->withCount('products')])
             ->first();
     }
 
@@ -43,7 +44,15 @@ class EloquentCategoryRepository extends AbstractRepository implements CategoryR
         return $this->model->newQuery()
             ->active()
             ->root()
-            ->with(['children.children'])
+            ->withCount('products')
+            ->with([
+                'children' => function ($query) {
+                    $query->active()
+                        ->withCount('products')
+                        ->orderBy('sort_order', 'asc')
+                        ->with(['children' => fn ($q) => $q->active()->withCount('products')->orderBy('sort_order', 'asc')]);
+                },
+            ])
             ->orderBy('sort_order', 'asc')
             ->get();
     }

@@ -28,6 +28,7 @@ class CategoryResource extends JsonResource
             'is_active' => $this->is_active,
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
+            'products_count' => $this->products_count ?? ($this->relationLoaded('products') ? $this->products->count() : null),
             'children' => CategoryResource::collection($this->whenLoaded('children')),
             'parent' => $this->whenLoaded('parent', function () {
                 return $this->parent ? [

@@ -313,41 +313,9 @@ export function HeroSection() {
         {/* ========================================================================= */}
         <div className="mt-14 pt-2">
           <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-sm grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
-            {/* Cat 1: Neural Hardware */}
+            {/* Cat 1: Wearables */}
             <Link
-              href="/category/neural-headsets"
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Radio className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <h5 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 truncate transition-colors">
-                  Neural Hardware
-                </h5>
-                <span className="text-[10px] text-slate-400 block font-medium">120+ Products</span>
-              </div>
-            </Link>
-
-            {/* Cat 2: Medical Products */}
-            <Link
-              href="/categories"
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <HeartPulse className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <h5 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 truncate transition-colors">
-                  Medical Products
-                </h5>
-                <span className="text-[10px] text-slate-400 block font-medium">85+ Products</span>
-              </div>
-            </Link>
-
-            {/* Cat 3: Wearables */}
-            <Link
-              href="/categories"
+              href="/category/wearables"
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -357,13 +325,45 @@ export function HeroSection() {
                 <h5 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 truncate transition-colors">
                   Wearables
                 </h5>
-                <span className="text-[10px] text-slate-400 block font-medium">65+ Products</span>
+                <span className="text-[10px] text-slate-400 block font-medium">Smart Health</span>
               </div>
             </Link>
 
-            {/* Cat 4: Laboratory Equipment */}
+            {/* Cat 2: Audio & Headphones */}
             <Link
-              href="/categories"
+              href="/category/audio-headphones"
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <Headphones className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <h5 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 truncate transition-colors">
+                  Audio
+                </h5>
+                <span className="text-[10px] text-slate-400 block font-medium">Wireless & ANC</span>
+              </div>
+            </Link>
+
+            {/* Cat 3: Smartphones & Tablets */}
+            <Link
+              href="/category/smartphones-tablets"
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <Radio className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <h5 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 truncate transition-colors">
+                  Smartphones
+                </h5>
+                <span className="text-[10px] text-slate-400 block font-medium">Flagship Tech</span>
+              </div>
+            </Link>
+
+            {/* Cat 4: Monitors & Displays */}
+            <Link
+              href="/category/monitors-displays"
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -371,15 +371,15 @@ export function HeroSection() {
               </div>
               <div className="min-w-0">
                 <h5 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 truncate transition-colors">
-                  Laboratory Equipment
+                  Displays
                 </h5>
-                <span className="text-[10px] text-slate-400 block font-medium">95+ Products</span>
+                <span className="text-[10px] text-slate-400 block font-medium">4K & Creative</span>
               </div>
             </Link>
 
-            {/* Cat 5: Accessories */}
+            {/* Cat 5: Computer Accessories */}
             <Link
-              href="/categories"
+              href="/category/computer-accessories"
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -389,13 +389,13 @@ export function HeroSection() {
                 <h5 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 truncate transition-colors">
                   Accessories
                 </h5>
-                <span className="text-[10px] text-slate-400 block font-medium">200+ Products</span>
+                <span className="text-[10px] text-slate-400 block font-medium">Hubs & Peripherals</span>
               </div>
             </Link>
 
-            {/* Cat 6: New Arrivals */}
+            {/* Cat 6: All Categories */}
             <Link
-              href="/products"
+              href="/categories"
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -403,9 +403,9 @@ export function HeroSection() {
               </div>
               <div className="min-w-0">
                 <h5 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 truncate transition-colors">
-                  New Arrivals
+                  Browse All
                 </h5>
-                <span className="text-[10px] text-slate-400 block font-medium">50+ Products</span>
+                <span className="text-[10px] text-slate-400 block font-medium">All Collections</span>
               </div>
             </Link>
           </div>

@@ -141,9 +141,15 @@ export interface CategoryItem {
   name: string;
   slug: string;
   description?: string | null;
+  image_url?: string | null;
   parent_id?: string | null;
+  sort_order?: number;
+  depth?: number;
   is_active: boolean;
   products_count?: number;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  children?: CategoryItem[];
 }
 
 export interface BrandItem {
